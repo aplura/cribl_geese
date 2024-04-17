@@ -1,0 +1,21 @@
+{
+  "auto_commit": false,
+  "simulate_copy": false,
+  "verify_ssl_source_server": false,
+  "verify_ssl_dest_server": true,
+  "src_cribl_cloud_client_id": "",
+  "src_cribl_cloud_client_secret": "",
+  "src_username": "admin",
+  "src_password": "r\"[vafVmLL3!Wb=L",
+  "src_base_url": "https://dullesengineering.com:49000/api/v1",
+  "src_group": "default",
+  "src_pack_directory": "./packs/src",
+  "src_lookup_file_directory": "./lookups/src",
+  "src_config_output_directory": "./exported_configs/src",
+  "dst_cribl_cloud_client_id": "PVbdE3xzJZQUXim0vm5shqr0lzPOi7o3",
+  "dst_cribl_cloud_client_secret": "_XwCf5TUoRHNaukEnavUS-EvoLJQVf7MjUMW0CoV1rMUd8H6_AZr7kVwyhiFizIT",
+  "dst_username": "admin",
+  "dst_password": "admin",
+  "dst_base_url": "https://main-tender-vaughan-mcfyf2l.cribl.cloud/api/v1",
+  "dst_group": "default2"
+}

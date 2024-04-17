@@ -1,0 +1,24 @@
+---
+source:
+  is_cloud: false
+  verify_ssl: false
+  enabled: true
+  client_id: ""
+  client_secret: ""
+  username: ""
+  password: ""
+  url: ""
+  directories:
+    pack: "packs"
+    lookups: "lookups"
+    configs: "configs"
+    certificates: "certificates"
+destination:
+  is_cloud: false
+  client_id: ""
+  client_secret: ""
+  username: ""
+  enabled: true
+  password: ""
+  verify_ssl: false
+  url: ""
