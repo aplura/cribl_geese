@@ -1,0 +1,17 @@
+{
+  "name": "geese",
+  "version": "1.1.0",
+  "watch" : {
+    "execute": {
+      "patterns": [
+        "geese"
+      ],
+      "extensions": "py"
+    }
+  },
+  "scripts": {
+    "execute": "./build.sh",
+    "watch": "npm-watch",
+    "pip": "python -m pip install --upgrade -r ./requirements.txt"
+  }
+}
