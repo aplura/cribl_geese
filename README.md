@@ -1,10 +1,10 @@
 # Geese
 
-Because we are migrating.
+Because we are migrating goats.
 This module allows interaction between Cribl environments.
 The main commands are: `export`, `import`, `simulate`, `migrate`, and `commit`.
 
-NOTE: There is *NO* `copy` feature.
+> ℹ️ **_NOTE:_** There is *NO* `copy` feature.
 Configs will need exported, reviewed, and imported.
 This prevents "shot-gunning" bad, not needed, or incorrect configs between environments.
 Since this module is expected to be used "at scale", it will take some time and is not an "instant transfer".
@@ -89,7 +89,7 @@ destination:
       - default
 ```
 
-NOTE: `worker_groups` will allow the same configurations to be exported and imported to those groups.
+> ℹ️ **_NOTE:_** `worker_groups` will allow the same configurations to be exported and imported to those groups.
 
 ### tuning.yaml
 
@@ -172,7 +172,7 @@ Otherwise, the export structure is:
 
 ## Import
 
-NOTE: Currently, import will only check the last high level configuration set in the export file.
+> ℹ️ **_NOTE:_** Currently, import will only check the last high level configuration set in the export file.
 Multiple groups (at the highest level) is not supported.
 If you want to import against multiple worker groups, update the configurations to have a `worker_groups` array with the specified worker groups.
 
@@ -180,7 +180,7 @@ Here, if `--use-namespace` is set, then any conflicted items will use their 'nam
 
 ## Simulate
 
-NOTE: Currently, simulate will only check the last high level configuration set in the export file.
+> ℹ️ **_NOTE:_**  Currently, simulate will only check the last high level configuration set in the export file.
 Multiple groups (at the highest level) is not supported.
 If you want to simulate against multiple worker groups, update the configurations to have a `worker_groups` array with the specified worker groups.
 
@@ -193,6 +193,10 @@ If `--groups` is not set, it will assume "single instance" and not distributed.
 
     geese commit --deploy
 
+    or
+
+    geese commit --deploy --groups <group1> <group2> --commit-message "I did it on the CLI"
+
 ## Migrate
 
-IMPORTANT: EXPERIMENTAL AND NOT YET TESTED. EXPERIMENT ON YOUR OWN.
+> ⚠️ **_IMPORTANT:_** EXPERIMENTAL AND NOT YET TESTED. EXPERIMENT ON YOUR OWN. ⚠️
