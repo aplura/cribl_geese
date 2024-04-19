@@ -37,6 +37,8 @@ def _migrate_workers(self, args):
                                        ]),
                             colors.get("info", "blue"))
             sys.exit(ec.ALL_IS_WELL)
+        else:
+            self._display("That's it, nothing else is done.", colors.get("info", "blue"))
 
     except YAMLError as err:
         self._logger.error("YAMLError: {}".format(err))

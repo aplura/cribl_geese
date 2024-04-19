@@ -34,7 +34,6 @@ def validate(object_type, cribl_object, filter_set):
                     return True
         if _knowledge_object in filter_set[_include_object] and object_type in filter_set[_include_object][_knowledge_object]:
             return True
-
     if _exclude_object in filter_set:
         if _universal_object in filter_set[_exclude_object]:
             for attribute in filter_set[_exclude_object][_universal_object]:
