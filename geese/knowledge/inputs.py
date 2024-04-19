@@ -60,7 +60,7 @@ class Inputs(BaseKnowledge):
                 self._log("info", action=action, item_type=self.obj_type, item_id=item["id"],
                           destination=self.url, message="Could not Create",
                           conflict_resolution=self.args.conflict_resolve)
-                if ((result.text.find("already exist") != -1 or result.text.find("criblmetrics input") != -1)
+                if ((result.text.find("already exist") != -1 or result.text.find("criblmetrics input") != -1 or result.text.find("cribllogs") != -1)
                         and self.args.conflict_resolve == "update"):
                     result = self.patch(self._endpoint_by_id(item_id=item["id"]), payload=item)
                     if result.status_code != 200:
