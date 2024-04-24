@@ -207,3 +207,5 @@ If `--groups` is not set, it will assume "single instance" and not distributed.
 ## Migrate
 
 > ⚠️ **_IMPORTANT:_** EXPERIMENTAL AND NOT YET TESTED. EXPERIMENT ON YOUR OWN. ⚠️
+
+    geese migrate --guids <list of guids> --new-group <destination_group> --auto-restart

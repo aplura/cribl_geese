@@ -41,6 +41,14 @@ class BaseKnowledge:
         except Exception as e:
             self._display_error("Unhandled INIT BASE Exception", e)
 
+    def to_json(self):
+        return dict(self)
+
+    def __iter__(self):
+        for attr, value in self.__dict__.items():
+            if not attr.startswith("_") and not callable(value):
+                yield attr, value
+
     def supports_groups(self):
         return self.supports_groups
 
@@ -108,9 +116,12 @@ class BaseKnowledge:
                 payload = self.payload
             if payload is not None:
                 if use_session is True:
-                    return requests.Session().get(url, data=json.dumps(payload), headers=headers, stream=stream,
+                    return requests.Session().get(url, data=json.dumps(payload),
+                                                  params=payload,
+                                                  headers=headers, stream=stream,
                                                   verify=self.verify_ssl)
-                return requests.get(url, data=json.dumps(payload), headers=headers, stream=stream,
+                return requests.get(url, data=json.dumps(payload),
+                                    params=payload, headers=headers, stream=stream,
                                     verify=self.verify_ssl)
             else:
                 if use_session is True:
