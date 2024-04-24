@@ -25,3 +25,4 @@ from .packs import Packs
 from .authentication import Authentication
 from .groups import Groups
 from .versioning import Versioning
+from .worker import Worker

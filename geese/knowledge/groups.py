@@ -73,27 +73,28 @@ class Groups(BaseKnowledge):
     def list_all(self):
         gs = self.export()
         for group in gs:
-            group["workers"] = self.workers(group=group)
+            group["workers"] = self.workers(group=group["id"])
         return gs
 
     def workers(self, group=None):
         # /api/v1/master/workers?filterExp=info.cribl.distMode%3D%3D%22worker%22&&group=="aws-prd-global-hec"
         action = f"export_{self.obj_type}_workers"
         payload = {
-            "filterExp": f'group=="{group}"'
+            "filterExp": f'group=="{group}" && info.cribl.distMode=="worker"',
         }
         data = self.get(endpoint=f"master/workers", payload=payload)
         if data.status_code == 200 and data.json():
-            items = [p for p in data.json()["items"] if p["id"] not in self.default_types or self.args.keep_defaults]
+            items = [p for p in data.json()["items"] if p["id"] not in self.default_types or self.args.keep_defaults
+                     and p["group"] == group]
             self._log("info",
                       action=action,
                       source_url=self.url,
-                      source_group=self.group,
+                      source_group=group,
                       count=len(items))
             return items
         else:
             self._log("warn", action=action,
                       source_url=self.url,
-                      source_group=self.group,
+                      source_group=group,
                       count=0)
             return []

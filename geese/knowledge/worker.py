@@ -13,6 +13,8 @@ class Worker(BaseKnowledge):
         self.id = kwargs["id"] if "id" in kwargs else None
         self.group = fleet if fleet is not None else group
         self.mode = "managed-edge" if fleet is not None else "worker"
+        if "info" in kwargs and "cribl" in kwargs["info"]:
+            self.mode = kwargs["info"]["cribl"]["distMode"]
 
     def migrate_leader(self, group=None, leader=None, auto_restart=True):
         payload = {
@@ -40,7 +42,7 @@ class Worker(BaseKnowledge):
             },
             "id": "distributed"
         }
-        endpoint = f'w/{self.id}"/system/instance/distributed'
+        endpoint = f'w/{self.id}/system/instance/distributed'
         results = self.patch(endpoint, payload=payload)
         if results.status_code == 200:
             self._display(f"\tWorker {self.id}: migrated successfully to {leader['url']}", self.colors.get("success", "green"))
