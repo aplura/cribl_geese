@@ -12,7 +12,7 @@ def read(fname):
 
 setuptools.setup(
     name="geese",
-    version="1.1.1",
+    version="1.1.2",
     author="Aplura, LLC",
     author_email="appsupport@aplura.com",
     description="Cribl Migrator",
