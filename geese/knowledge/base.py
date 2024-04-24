@@ -37,6 +37,7 @@ class BaseKnowledge:
             self.headers = {"Content-type": "application/json",
                             "Authorization": "Bearer " + self.token}
             self.payload = None
+            self.update_items_200 = ["cribllogs", "criblmetrics input", "already exist"]
         except Exception as e:
             self._display_error("Unhandled INIT BASE Exception", e)
 
@@ -84,6 +85,11 @@ class BaseKnowledge:
 
     def simulate(self, item=None):
         self._log("debug", action="Simulation", message="base_implementation", item=item)
+        return []
+
+    def export(self):
+        self._log("debug", action="Simulation", message="base_implementation")
+        return []
 
     def _endpoint_by_id(self, item_id=None):
         return f'{self.endpoint}/{item_id if item_id is not None else ""}'
@@ -184,6 +190,72 @@ class BaseKnowledge:
         except Exception as e:
             raise Exception(
                 f"General exception raised while attempting DELETE {self._build_endpoint(endpoint)}: {e}")
+
+    def _update_item(self, action, item, id_field="id", changes=None, update_on_create_failure=True):
+        if changes is None:
+            changes = {"id": item[id_field] if id_field in item else "Unknown",
+                       "previous": {"status": "not_updated", "data": {}},
+                       "updated": {"status": "not_updated", "data": {}}}
+        try:
+            self._log("info", action=action,
+                      item_type=self.obj_type,
+                      item_id=item[id_field],
+                      destination=self.url,
+                      group=self.group)
+            result = self.export()
+            if len(result) > 0:
+                for r in result:
+                    if r[id_field] == item[id_field]:
+                        changes["previous"] = {"status": "exists", "data": r}
+            else:
+                changes["previous"] = {"status": "error", "result": result}
+            result = self.post(self.endpoint, payload=item)
+            if result.status_code != 200:
+                self._log("info", action=action, item_type=self.obj_type, item_id=item[id_field],
+                          destination=self.url, message="Could not Create",
+                          conflict_resolution=self.args.conflict_resolve)
+                if (any([True if result.text.find(txt) != -1 else False for txt in self.update_items_200])
+                        and self.args.conflict_resolve == "update"
+                        and update_on_create_failure):
+                    result = self.patch(self._endpoint_by_id(item_id=item[id_field]), payload=item)
+                    if result.status_code != 200:
+                        self._display(f"\t{item[id_field]}: Update failed. {result.text}", self.colors.get("error"))
+                        changes["updated"] = {"status": "update_failed", "data": item, "error": result.text}
+                    else:
+                        self._display(f"\t{item[id_field]}: Update successful.", self.colors.get("success", "green"))
+                        changes['updated'] = {"status": "success", "data": item}
+                elif result.text.find("should have required property") != -1:
+                    msg = result.text
+                    try:
+                        msg = result.json()["message"]
+                        msg = json.loads(msg)
+                        t = []
+                        for m in msg:
+                            t.append(f'{m["keyword"]}:\n\t\t{m["message"]}\n\t\t{m["params"]}\n\t\t{m["schemaPath"]}')
+                        msg = "\n\t".join(t)
+                    except Exception as e:
+                        msg = result.text
+                    self._display(f"\t{item[id_field]}: Create failed. \n\t{msg}", self.colors.get("error", "red"))
+                    changes["updated"] = {"status": "create_failed", "data": item, "error": result.text}
+                elif self.args.conflict_resolve == "ignore":
+                    self._display(f"\t{item[id_field]}: Ignoring conflict/error.", self.colors.get("success", "green"))
+                    changes["updated"] = {"status": "ignored", "data": item}
+                else:
+                    # some other error
+                    self._display(f"\t{item['id']}: Error while trying to create. {result.text}",
+                                  self.colors.get("error"))
+                    changes["updated"] = {"status": "update_failed", "data": item, "error": result}
+            else:
+                self._display(f"\t{item['id']}: Update succeeded.", self.colors.get("success", "green"))
+                changes['updated'] = {"status": "success", "data": item}
+                changes["diff"] = json.loads(
+                    DeepDiff(changes["previous"]["data"], changes["updated"]["data"]).to_json())
+            return changes
+        except Exception as e:
+            self._display_error("Unhandled Exception", e)
+            changes["diff"] = json.loads(
+                DeepDiff(changes["previous"]["data"], changes["updated"]["data"]).to_json())
+            return changes
 
     def get_ot(self):
         return self.obj_type
