@@ -20,6 +20,10 @@ from geese.constants.configs import colors
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
+def display(message, color="blue"):
+    print(colored(f"{message}", colors.get(color, "blue")))
+
+
 class Goose(object):
     objects = {}
 

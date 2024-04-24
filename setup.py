@@ -34,7 +34,9 @@ setuptools.setup(
         "knowledge/**/*",
         "utils/*",
         "utils/**/*",
-        "*.py"
+        "*.py",
+        "README.md",
+        "LICENSE.txt",
     ]},
     long_description=read('README'),
     install_requires=[

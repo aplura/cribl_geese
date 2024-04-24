@@ -18,7 +18,7 @@ Expected order of operations:
 3. Simulate the configs to check for and resolve conflicts.
 4. Import the configs required.
 5. Commit and deploy the groups required.
-6. Migrate the workers <- `WORK IN PROGRESS`
+6. Migrate the workers <- `WORK IN PROGRESS` AND `INCOMPLETE`
 
 ## LICENSE
 
@@ -92,6 +92,11 @@ destination:
 ```
 
 > ℹ️ **_NOTE:_** `worker_groups` will allow the same configurations to be exported and imported to those groups.
+> There are several locations within an import yaml that can determine the worker group the config is placed into.
+> 1. `config.yaml`, as a child under a source or destination.
+> 2. As an attribute of an object configuration
+> 3. As an attribute of an attribute `conf` of an object configuration
+> 
 
 ### tuning.yaml
 
