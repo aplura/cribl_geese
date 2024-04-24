@@ -18,7 +18,6 @@ def main():
     parser.add_argument("--license", help="Displays the License", action='store_true')
     args = parser.parse_args()
     _edir = os.path.dirname(__file__)
-    print(_edir)
     if args.version:
         display(f"Version: {version}")
     if args.readme:
