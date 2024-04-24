@@ -8,6 +8,7 @@ The main commands are: `export`, `import`, `simulate`, `migrate`, and `commit`.
 Configs will need exported, reviewed, and imported.
 This prevents "shot-gunning" bad, not needed, or incorrect configs between environments.
 Since this module is expected to be used "at scale", it will take some time and is not an "instant transfer".
+But it's much faster than clicking through the GUI multiple times to make the same config.
 
 Expected order of operations:
 
@@ -17,6 +18,7 @@ Expected order of operations:
 3. Simulate the configs to check for and resolve conflicts.
 4. Import the configs required.
 5. Commit and deploy the groups required.
+6. Migrate the workers <- `WORK IN PROGRESS`
 
 ## LICENSE
 
