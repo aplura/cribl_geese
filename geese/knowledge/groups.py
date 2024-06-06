@@ -1,5 +1,4 @@
 import json
-import os
 from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 
@@ -9,7 +8,7 @@ class Groups(BaseKnowledge):
         super().__init__(leader, args, logger, **kwargs)
         self.obj_type = "groups"
         self.default_types = []
-        self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else f"master/groups"
+        self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else "master/groups"
         self.group = None
         self.supports_groups = False
 
@@ -82,7 +81,7 @@ class Groups(BaseKnowledge):
         payload = {
             "filterExp": f'group=="{group}" && info.cribl.distMode=="worker"',
         }
-        data = self.get(endpoint=f"master/workers", payload=payload)
+        data = self.get(endpoint="master/workers", payload=payload)
         if data.status_code == 200 and data.json():
             items = [p for p in data.json()["items"] if p["id"] not in self.default_types or self.args.keep_defaults
                      and p["group"] == group]

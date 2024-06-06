@@ -1,16 +1,16 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "setuptools"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "geese"
-dynamic = ["version"]
+version = "1.1.2"
 description = "Cribl Geese: A Cribl Migration Tool"
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"}
+requires-python = ">=3.10"
 authors = [
-    { name = "Aplura", email = "appsupport@aplura.com" },
-    { name = "LLC" },
+    { name = "Aplura, LLC", email = "appsupport@aplura.com" },
 ]
 keywords = [
     "aplura",
@@ -35,12 +35,5 @@ dependencies = [
 geese = "geese:main.main"
 
 [project.urls]
-Homepage = "https://www.aplura.com"
-
-[tool.hatch.version]
-path = "geese/__init__.py"
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/geese",
-]
+Homepage = "https://github.com/aplura/cribl_geese"
+Issues = "https://github.com/aplura/cribl_geese/issues"

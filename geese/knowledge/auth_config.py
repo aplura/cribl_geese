@@ -12,7 +12,7 @@ class AuthConfig(BaseKnowledge):
         self.group = None
         if group is not None or fleet is not None:
             self.group = fleet if fleet is not None else group
-            self.endpoint = f"system/settings/auth"
+            self.endpoint = "system/settings/auth"
 
     def export(self):
         action = f"export_{self.obj_type}"

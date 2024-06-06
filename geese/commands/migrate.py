@@ -1,15 +1,11 @@
-import json
-import os
 import re
-
-import yaml
-from yaml import YAMLError, safe_dump
+from yaml import YAMLError
 import geese.constants.exit_codes as ec
 import argparse
 import sys
 from geese.constants.common_arguments import add_arguments
 from geese.constants.configs import colors
-from geese.knowledge import Versioning, Worker
+from geese.knowledge import Worker
 
 
 def _migrate_workers(self, args):
