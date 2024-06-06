@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "geese"
+dynamic = ["version"]
+description = "Cribl Geese: A Cribl Migration Tool"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Aplura", email = "appsupport@aplura.com" },
+    { name = "LLC" },
+]
+keywords = [
+    "aplura",
+    "cribl",
+    "migration",
+]
+classifiers = [
+    "Development Status :: 2 - Beta",
+    "License :: MIT",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "deepdiff",
+    "deepmerge",
+    "multicommand",
+    "PyYAML",
+    "termcolor",
+    "urllib3",
+]
+
+[project.scripts]
+geese = "geese:main.main"
+
+[project.urls]
+Homepage = "https://www.aplura.com"
+
+[tool.hatch.version]
+path = "geese/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/geese",
+]
