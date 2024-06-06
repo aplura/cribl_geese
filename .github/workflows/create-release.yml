@@ -1,0 +1,41 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.10", "3.11" ]
+    steps:
+        - uses: actions/checkout@v4
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v3
+          with:
+            python-version: ${{ matrix.python-version }}
+        - name: Create Release Notes File
+          env:
+            COMMITTEXT: "${{ github.event.head_commit.message }}"
+          run: |
+            php create-release-notes-file.php
+        - name: Set Tag Output
+          id: set-tag
+          run: echo "::set-output name=tag_name::$(sh get-version.sh)"
+            - name: Create Tag
+          uses: actions/github-script@v3
+          env:
+            TAG: ${{ steps.set-tag.outputs.tag_name }}
+          with:
+            github-token: ${{ github.token }}
+            script: |
+              github.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+               ref: "refs/tags/${{ steps.set-tag.outputs.tag_name }}",
+                sha: context.sha
+              })
