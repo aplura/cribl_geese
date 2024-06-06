@@ -1,5 +1,4 @@
 import json
-import os
 from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 
@@ -77,7 +76,7 @@ class Routes(BaseKnowledge):
                         for m in msg:
                             t.append(f'{m["keyword"]}:\n\t\t{m["message"]}\n\t\t{m["params"]}\n\t\t{m["schemaPath"]}')
                         msg = "\n\t".join(t)
-                    except Exception as e:
+                    except:
                         msg = result.text
                     self._display(f"\t{item['id']}: Create failed. \n\t{msg}", self.colors.get("error", "red"))
                     changes["updated"] = {"status": "create_failed", "data": item, "error": result.text}

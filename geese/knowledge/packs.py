@@ -54,7 +54,7 @@ class Packs(BaseKnowledge):
                 self._display(
                     f"\tPack {pack_id}: API responded with error: {json.loads(response.text)['message']}",
                     self.colors.get("error", "yellow"))
-                self._display(f"\tAttempting to export pack using mode=merge...",
+                self._display("\tAttempting to export pack using mode=merge...",
                               self.colors.get("warning", "yellow"))
                 # try merge
                 response = self._export_pack_merge(pack_id)
@@ -84,8 +84,8 @@ class Packs(BaseKnowledge):
         return pack
 
     def export(self, save_pack=True):
+        action = f"export_{self.obj_type}"
         try:
-            action = f"export_{self.obj_type}"
             data = self.get(self.endpoint)
             packs = []
             if data.status_code == 200 and data.json():
@@ -107,7 +107,7 @@ class Packs(BaseKnowledge):
                             self.save_pack(directory, pack)
             return packs
         except Exception as e:
-            self._display_error(f"Unhandled EXPORT Exception: {self.obj_type}", e)
+            self._display_error(f"{action} Unhandled EXPORT Exception: {self.obj_type}", e)
             return []
 
     def _upload_and_install(self, pack):

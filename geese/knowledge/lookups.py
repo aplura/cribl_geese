@@ -16,7 +16,7 @@ class Lookups(BaseKnowledge):
             self.group = None
             if group is not None or fleet is not None:
                 self.group = fleet if fleet is not None else group
-                self.endpoint = f"system/lookups"
+                self.endpoint = "system/lookups"
         except Exception as e:
             self._display_error("Unhandled INIT Exception", e)
 

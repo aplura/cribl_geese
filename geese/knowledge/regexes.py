@@ -1,5 +1,4 @@
 import json
-import os
 from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 

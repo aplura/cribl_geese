@@ -26,4 +26,3 @@ class KennyLoggins:
         if not len(_log.handlers):
             _log.addHandler(f_handle)
         return _log
-

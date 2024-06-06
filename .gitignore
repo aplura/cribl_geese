@@ -10,6 +10,7 @@ dist/*
 logs/
 node_modules/
 yarn.lock
+build/
 config.yaml
 cribl/
 sample.sh

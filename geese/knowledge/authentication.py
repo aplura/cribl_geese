@@ -1,5 +1,3 @@
-import json
-from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 
 
