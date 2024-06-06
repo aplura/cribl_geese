@@ -45,7 +45,8 @@ setuptools.setup(
         "multicommand",
         "deepdiff",
         "deepmerge",
-        "urllib3"
+        "urllib3",
+        "build"
     ],
     classifiers=[
         "Development Status :: 1 - Alpha",
