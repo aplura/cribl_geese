@@ -1,5 +1,4 @@
 import json
-import os
 from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 
@@ -13,7 +12,7 @@ class Mappings(BaseKnowledge):
         self.group = None
         if group is not None or fleet is not None:
             self.group = fleet if fleet is not None else group
-            self.endpoint = f"mappings"
+            self.endpoint = "mappings"
 
     def export(self):
         action = f"export_{self.obj_type}"

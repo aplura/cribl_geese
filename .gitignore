@@ -1,4 +1,5 @@
 __pycache__/
+build.sh
 *-README.md
 .idea/*
 *.iml
@@ -9,11 +10,11 @@ dist/*
 logs/
 node_modules/
 yarn.lock
+build/
 config.yaml
 cribl/
 sample.sh
 *.whl
-lib/cribl_python_api_wrapper-1.1.0.tar.gz
 tuning.yaml
 geese/README.md
 geese/LICENSE.txt

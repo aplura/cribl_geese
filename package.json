@@ -12,6 +12,9 @@
   "scripts": {
     "execute": "./build.sh",
     "watch": "npm-watch",
+    "build": "yarn wheel && yarn sdist",
+    "wheel": "python3 -m build --wheel",
+    "sdist": "python3 -m build --sdist",
     "pip": "python -m pip install --upgrade -r ./requirements.txt"
   }
 }

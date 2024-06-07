@@ -1,15 +1,12 @@
 import json
 import os
-
 from yaml import YAMLError, safe_dump
 import geese.constants.exit_codes as ec
 import argparse
 import sys
-
-from geese.utils.operations import validate, load_tuning, validate_knowledge
+from geese.utils.operations import load_tuning, validate_knowledge
 from geese.constants.common_arguments import add_arguments
-from geese.constants.configs import colors, export_cmd, tuning, import_cmd
-
+from geese.constants.configs import colors, export_cmd, tuning
 # Check for a "get diff" api call
 
 

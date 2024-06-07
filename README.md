@@ -18,8 +18,15 @@ Expected order of operations:
 3. Simulate the configs to check for and resolve conflicts.
 4. Import the configs required.
 5. Commit and deploy the groups required.
-6. Migrate the workers <- `WORK IN PROGRESS` AND `INCOMPLETE`
+6. Migrate the workers <- `WORK IN PROGRESS` AND `EXPERIMENTAL`
 
+## Known Issues
+
+## Release Notes
+
+### v1.1.2
+
+* Initial Release
 ## LICENSE
 
 The MIT License (MIT)
