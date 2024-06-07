@@ -31,6 +31,8 @@ jobs:
         - name: Tag the commit
           run: |
             next_version=${{ steps.version.outputs.output }}
+            git config --global user.email "appsupport@aplura.com"
+            git config --global user.name "${{ github.actor }}"
             git tag -a "$next_version" -m "Version $next_version"
             git push --follow-tags
         - name: Build Package SDist
