@@ -1,0 +1,40 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.10", "3.11" ]
+    steps:
+        - uses: actions/checkout@v4
+        - name: 'Get Version'
+          id: version
+          uses: 'cloudposse/github-action-jq@main'
+          with:
+            input: 'properties.json'
+            # JQ query string
+            script: '.version'
+            # Output raw strings, not JSON texts
+            raw-output: true
+        - name: Create Tag
+          uses: actions/github-script@v3
+          env:
+            TAG: ${{ steps.version.outputs.output }}
+          with:
+            github-token: ${{ github.token }}
+            script: |
+              github.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+               ref: "refs/tags/${{ steps.set-tag.outputs.tag_name }}",
+                sha: context.sha
+              })
+        - name: Build Package
+          run: python -m build

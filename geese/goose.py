@@ -351,7 +351,7 @@ class Goose(object):
                                                                                      group=group,
                                                                                      item=individual_item)
                     elif func not in destination_groups_only:
-                        self._display(f"\t\tNo Groups", colors["info"])
+                        self._display("\t\tNo Groups", colors["info"])
                         import_result = self._perform_operation(self.objects[func], "import", self.destination,
                                                                 item=individual_item)
                     if "worker_groups" in self.destination:

@@ -1,6 +1,5 @@
 import json
 import os
-
 import yaml
 from yaml import YAMLError, safe_dump
 import geese.constants.exit_codes as ec

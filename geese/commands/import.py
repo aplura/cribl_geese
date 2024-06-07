@@ -1,7 +1,7 @@
 import json
 import os
 import yaml
-from yaml import YAMLError, safe_dump
+from yaml import YAMLError
 import geese.constants.exit_codes as ec
 import argparse
 import sys
