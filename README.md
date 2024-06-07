@@ -22,7 +22,15 @@ Expected order of operations:
 
 ## Known Issues
 
+Please see: https://github.com/aplura/cribl_geese/issues for open issues.
+
 ## Release Notes
+
+### v1.1.3
+
+* Improvements
+   * Updated README for links to releases.
+   * Included Snyk Scanning
 
 ### v1.1.2
 
@@ -45,6 +53,11 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Download
+
+Download the latest sdist/whl from https://github.com/aplura/cribl_geese/releases/latest .
+This file will be used in the installation and upgrade sections with the pip command.
 
 ## Install
 
