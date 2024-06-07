@@ -5,7 +5,7 @@ name: Python Testing
 
 on:
   push:
-    branches: [ "next" ]
+    branches: [ "next", "main" ]
 
 jobs:
   build:
