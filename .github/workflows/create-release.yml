@@ -49,14 +49,13 @@ jobs:
           run: python -m build --wheel
         - name: Create Release
           id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          uses: softprops/action-gh-release@v2
           with:
-            artifacts: "dist/*"
+            files: "dist/*"
             tag_name: ${{ steps.version.outputs.output }}
             release_name: Release ${{ steps.version.outputs.output }}
             body: |
               ${{ steps.releaseNotes.outputs.output }}
             draft: false
             prerelease: false
+            make_latest: true
