@@ -19,20 +19,30 @@ jobs:
             script: '.version'
             # Output raw strings, not JSON texts
             raw-output: true
-        - name: Create Tag
-          uses: actions/github-script@v3
-          env:
-            TAG: ${{ steps.version.outputs.output }}
+        - name: 'Get Release Notes'
+          id: releaseNotes
+          uses: 'cloudposse/github-action-jq@main'
           with:
-            github-token: ${{ github.token }}
-            script: |
-              github.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-               ref: "refs/tags/${{ steps.set-tag.outputs.tag_name }}",
-                sha: context.sha
-              })
+            input: 'release_notes.json'
+            # JQ query string
+            script: '.| to_entries[] | select(.key | startswith("${{ steps.version.outputs.output }}")) | .value'
+            # Output raw strings, not JSON texts
+            raw-output: true
+        - name: Tag the commit
+          run: |
+            next_version=${{ steps.version.outputs.output }}
+            git tag -a "$next_version" -m "Version $next_version"
+            git push --follow-tags
         - name: Build Package SDist
           run: python -m build --sdist
         - name: Build Package Wheel
           run: python -m build --wheel
+        - name: Create release
+          id: create_release
+          uses: actions/create-release@latest
+          with:
+            tag_name: ${{ steps.version.outputs.output }}
+            release_name: Release ${{ steps.version.outputs.output }}
+            body: ${{ steps.releaseNotes.outputs.output }}
+            draft: false
+            prerelease: false
