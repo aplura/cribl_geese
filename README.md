@@ -4,6 +4,21 @@ Because we are migrating goats.
 This module allows interaction between Cribl environments.
 The main commands are: `export`, `import`, `simulate`, `migrate`, and `commit`.
 
+## Status
+
+### Releases
+
+![snyk](https://github.com/aplura/cribl_geese/actions/workflows/snyk-scanning.yml/badge.svg?branch=main)
+![testing](https://github.com/aplura/cribl_geese/actions/workflows/python-package.yml/badge.svg?branch=main)
+![release](https://github.com/aplura/cribl_geese/actions/workflows/create-release.yml/badge.svg?branch=main)
+
+### Next
+
+![snyk](https://github.com/aplura/cribl_geese/actions/workflows/snyk-scanning.yml/badge.svg?branch=next)
+![testing](https://github.com/aplura/cribl_geese/actions/workflows/python-package.yml/badge.svg?branch=next)
+
+## TAKE THIS DOWN
+
 > ℹ️ **_NOTE:_** There is *NO* `copy` feature.
 Configs will need exported, reviewed, and imported.
 This prevents "shot-gunning" bad, not needed, or incorrect configs between environments.
