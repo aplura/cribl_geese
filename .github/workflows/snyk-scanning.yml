@@ -31,6 +31,10 @@ jobs:
           python-version: 3.12
         # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
         # Use || true to not fail the pipeline
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Snyk Code test
         run: snyk code test --sarif > snyk-code.sarif # || true
 
