@@ -1,6 +1,7 @@
 {
   "name": "geese",
   "version": "1.1.2",
+  "description": "This File is provided for 'active development' (yarn watch)",
   "watch" : {
     "execute": {
       "patterns": [
@@ -10,7 +11,7 @@
     }
   },
   "scripts": {
-    "execute": "./build.sh",
+    "execute": "yarn sdist",
     "watch": "npm-watch",
     "build": "yarn wheel && yarn sdist",
     "wheel": "python3 -m build --wheel",

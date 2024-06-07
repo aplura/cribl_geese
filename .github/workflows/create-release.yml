@@ -14,7 +14,7 @@ jobs:
           id: version
           uses: 'cloudposse/github-action-jq@main'
           with:
-            input: 'properties.json'
+            input: 'package.json'
             # JQ query string
             script: '.version'
             # Output raw strings, not JSON texts
@@ -32,5 +32,7 @@ jobs:
                ref: "refs/tags/${{ steps.set-tag.outputs.tag_name }}",
                 sha: context.sha
               })
-        - name: Build Package
-          run: python -m build
+        - name: Build Package SDist
+          run: python -m build --sdist
+        - name: Build Package Wheel
+          run: python -m build --wheel
