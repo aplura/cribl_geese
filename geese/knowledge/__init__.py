@@ -26,3 +26,5 @@ from .authentication import Authentication
 from .groups import Groups
 from .versioning import Versioning
 from .worker import Worker
+from .searches import Searches
+from .datasets import Datasets
