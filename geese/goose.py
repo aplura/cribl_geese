@@ -4,7 +4,7 @@ from geese.knowledge import Outputs, Pipelines, Certificates, Secrets, Keys, Aut
 from geese.knowledge import CollectorJobs, GlobalVariables, Parsers, Regexes, GrokFiles, Schemas
 from geese.knowledge import AppScopeConfigs, DatabaseConnections, EventBreakerRules, FleetMappings, Groups
 from geese.knowledge import Mappings, Notifications, NotificationTargets, ParquetSchemas, Lookups, Packs
-from geese.knowledge import Authentication, Versioning
+from geese.knowledge import Authentication, Versioning, Datasets, Searches
 from geese.utils.operations import validate_knowledge, validate
 from geese.KennyLoggins import KennyLoggins
 import os
@@ -92,7 +92,9 @@ class Goose(object):
             "packs": Packs,
             "secrets": Secrets,
             "keys": Keys,
-            "certificates": Certificates
+            "certificates": Certificates,
+            "datasets": Datasets,
+            "searches": Searches
         }
 
     @staticmethod
