@@ -1,3 +1,5 @@
+import os
+
 from geese.knowledge.base import BaseKnowledge
 
 
@@ -8,10 +10,19 @@ class Authentication(BaseKnowledge):
         self.leader = leader
         self.headers = {"Content-type": "application/json"}
 
+    def _get_auth_env(self, key):
+        env_key = self.leader.get(key)
+        if os.getenv(env_key):
+            return os.getenv(env_key)
+        return self.leader[key]
+
     def api_get_auth_data(self):
         try:
-            payload = {"username": self.leader["username"],
-                       "password": self.leader["password"]}
+
+            username = self._get_auth_env("username")
+            password = self._get_auth_env["password"]
+            payload = {"username": username,
+                       "password": password}
             response = self.post("auth/login", payload=payload)
             if response.json() and "token" in response.json():
                 return response.json()["token"], response.json()
@@ -22,8 +33,8 @@ class Authentication(BaseKnowledge):
 
     def get_cloud_access_token(self):
         try:
-            client_id = self.leader["client_id"]
-            client_secret = self.leader["client_secret"]
+            client_id = self._get_auth_env("client_id")
+            client_secret = self._get_auth_env("client_secret")
             login_server = "https://login.cribl.cloud/oauth/token"
             audience = "https://api.cribl.cloud"
             if "cribl-staging.cloud" in self.url:

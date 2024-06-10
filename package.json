@@ -11,13 +11,14 @@
     }
   },
   "scripts": {
-    "execute": "yarn sdist",
+    "execute": "yarn sdist && yarn insideout",
     "watch": "npm-watch",
+    "insideout": "python3 -m pip install --upgrade dist/geese-*.tar.gz",
     "build": "yarn wheel && yarn sdist",
     "wheel": "python3 -m build --wheel",
     "sdist": "python3 -m build --sdist",
     "pip": "python -m pip install --upgrade -r ./requirements.txt",
     "test": "pytest tests/tests.py --doctest-modules --junitxml=tests/results/junit-test-results.xml",
-    "flake": "flake8 ./geese --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --ignore=C901,E501,E722"
+    "flake": "flake8 ./geese --count --exit-zero --max-complexity=25 --max-line-length=127 --statistics --ignore=C901,E501,E722"
   }
 }
