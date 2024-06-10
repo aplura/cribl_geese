@@ -46,10 +46,12 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 * Improvements
    * Updated README for links to releases.
    * Included Snyk Scanning
+   * Now supports Environment variables for authentication
 
 ### v1.1.2
 
 * Initial Release
+
 ## LICENSE
 
 The MIT License (MIT)
@@ -97,6 +99,10 @@ The default value is `./config.yaml`.
 Only one destination is supported.
 `export` requires source(s).
 Multiple sources are supported.
+
+| :memo:        | The `client_id`, `client_secret`, `username`, and `password` fields support environment variables. Simply replace the value of the key in `config.yaml` with the name of the environment variable (e.g. `CRIBL_SRC_1`) and have the environment variable available. |
+|---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
 
 ```yaml
 # Sources: Array of items
