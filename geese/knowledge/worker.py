@@ -2,9 +2,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Worker(BaseKnowledge):
+    obj_type = "worker"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, product="stream", **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "worker"
         self.default_types = []
         self.endpoint = None
         self.id = kwargs["id"] if "id" in kwargs else None

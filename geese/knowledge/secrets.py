@@ -4,10 +4,11 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Secrets(BaseKnowledge):
+    obj_type = "secrets"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
         try:
-            self.obj_type = "secrets"
             self.default_types = []
             self.endpoint = "system/secrets"
             self.group = None

@@ -7,10 +7,11 @@ from geese.utils import validate
 
 
 class Packs(BaseKnowledge):
+    obj_type = "packs"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
         try:
-            self.obj_type = "packs"
             self.default_types = []
             self.endpoint = "packs"
             self.group = None

@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Outputs(BaseKnowledge):
+    obj_type = "outputs"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "outputs"
         self.default_types = []
         self.endpoint = "system/outputs"
         self.group = None

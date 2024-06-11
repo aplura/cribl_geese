@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Groups(BaseKnowledge):
+    obj_type = "groups"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, product="stream", **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "groups"
         self.default_types = []
         self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else "master/groups"
         self.group = None

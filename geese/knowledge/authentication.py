@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Authentication(BaseKnowledge):
+    obj_type = "authentication"
+
     def __init__(self, leader, args=None, logger=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "authentication"
         self.leader = leader
         self.headers = {"Content-type": "application/json"}
 
