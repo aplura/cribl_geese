@@ -47,6 +47,8 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
    * Updated README for links to releases.
    * Included Snyk Scanning
    * Now supports Environment variables for authentication
+* New Knowledge Objects
+    * Supports CriblSearch knowledge objects
 
 ### v1.1.2
 
