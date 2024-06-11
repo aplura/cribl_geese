@@ -53,7 +53,7 @@ def _export_leader(self, args):
                                 c_obj[oop] = {}
                             for item in oo[oop]:
                                 id_id = None
-                                for my_id in ["id", "keyId"]:
+                                for my_id in ["id", "keyId", "tenantId"]:
                                     if my_id in item:
                                         id_id = item[my_id]
                                 if id_id is not None:

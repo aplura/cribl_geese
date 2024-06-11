@@ -3,23 +3,20 @@ from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 
 
-class EventBreakerRules(BaseKnowledge):
-    obj_type = "event_breaker_rules"
+class SrchGrok(BaseKnowledge):
+    obj_type = "srch_grok"
 
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
         self.default_types = []
-        self.endpoint = "lib/breakers"
-        self.group = None
-        if group is not None or fleet is not None:
-            self.group = fleet if fleet is not None else group
-            self.endpoint = f"m/{self.group}/lib/breakers"
+        self.endpoint = "m/default_search/lib/grok"
+        self.group = "default_search"
 
     def export(self):
         action = f"export_{self.obj_type}"
         data = self.get(self.endpoint)
         if data.status_code == 200 and data.json():
-            items = [p for p in data.json()["items"] if p["id"] not in self.default_types or self.args.keep_defaults]
+            items = data.json()["items"]
             self._log("info",
                       action=action,
                       source_url=self.url,

@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class NotificationTargets(BaseKnowledge):
+    obj_type = "notification_targets"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "notification_targets"
         self.default_types = []
         self.endpoint = "notification-targets"
         self.group = None

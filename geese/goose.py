@@ -4,7 +4,8 @@ from geese.knowledge import Outputs, Pipelines, Certificates, Secrets, Keys, Aut
 from geese.knowledge import CollectorJobs, GlobalVariables, Parsers, Regexes, GrokFiles, Schemas
 from geese.knowledge import AppScopeConfigs, DatabaseConnections, EventBreakerRules, FleetMappings, Groups
 from geese.knowledge import Mappings, Notifications, NotificationTargets, ParquetSchemas, Lookups, Packs
-from geese.knowledge import Authentication, Versioning
+from geese.knowledge import Authentication, Versioning, SrchRegexes, SrchGrok, SrchUsageGroups, SrchDatasetProviders
+from geese.knowledge import SrchDatasets, SrchSearches, SrchMacros, SrchParsers, SrchDashboards, SrchDashboardCategories
 from geese.utils.operations import validate_knowledge, validate
 from geese.KennyLoggins import KennyLoggins
 import os
@@ -67,33 +68,13 @@ class Goose(object):
         self._execute = args.handler
         self._log_level = default_log_level
         self.use_namespace = args.use_namespace if len(self.sources) > 1 and hasattr(args, 'use_namespace') else False
-        self.objects = {
-            "groups": Groups,
-            "pipelines": Pipelines,
-            "outputs": Outputs,
-            "inputs": Inputs,
-            "collectors": CollectorJobs,
-            "global_variables": GlobalVariables,
-            "mappings": Mappings,
-            "parsers": Parsers,
-            "regexes": Regexes,
-            "grokfiles": GrokFiles,
-            "schemas": Schemas,
-            "parquet_schemas": ParquetSchemas,
-            "database_connections": DatabaseConnections,
-            "notifications": Notifications,
-            "notification_targets": NotificationTargets,
-            "appscope_configs": AppScopeConfigs,
-            "auth_config": AuthConfig,
-            "fleet_mappings": FleetMappings,
-            "event_breakers": EventBreakerRules,
-            "routes": Routes,
-            "lookups": Lookups,
-            "packs": Packs,
-            "secrets": Secrets,
-            "keys": Keys,
-            "certificates": Certificates
-        }
+        for ds in [Groups, Pipelines, Outputs, Inputs, CollectorJobs, GlobalVariables, Mappings, Parsers, Regexes,
+                   GrokFiles, Schemas, ParquetSchemas, DatabaseConnections, Notifications,
+                   NotificationTargets, AppScopeConfigs, AuthConfig, FleetMappings, EventBreakerRules, Routes,
+                   Lookups, Packs, Secrets, Keys, Certificates, SrchDatasets, SrchSearches, SrchMacros, SrchParsers,
+                   SrchDashboards, SrchDashboardCategories, SrchGrok, SrchRegexes, SrchUsageGroups,
+                   SrchDatasetProviders]:
+            self.objects[ds.obj_type] = ds
 
     @staticmethod
     def _log_line(**kwargs):

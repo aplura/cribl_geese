@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Mappings(BaseKnowledge):
+    obj_type = "mappings"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "mappings"
         self.default_types = []
         self.endpoint = "mappings"
         self.group = None

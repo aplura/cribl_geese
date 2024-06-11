@@ -4,6 +4,21 @@ Because we are migrating goats.
 This module allows interaction between Cribl environments.
 The main commands are: `export`, `import`, `simulate`, `migrate`, and `commit`.
 
+## Status
+
+### Releases
+
+![snyk](https://github.com/aplura/cribl_geese/actions/workflows/snyk-scanning.yml/badge.svg?branch=main)
+![testing](https://github.com/aplura/cribl_geese/actions/workflows/python-package.yml/badge.svg?branch=main)
+![release](https://github.com/aplura/cribl_geese/actions/workflows/create-release.yml/badge.svg?branch=main)
+
+### Next
+
+![snyk](https://github.com/aplura/cribl_geese/actions/workflows/snyk-scanning.yml/badge.svg?branch=next)
+![testing](https://github.com/aplura/cribl_geese/actions/workflows/python-package.yml/badge.svg?branch=next)
+
+## TAKE THIS DOWN
+
 > ℹ️ **_NOTE:_** There is *NO* `copy` feature.
 Configs will need exported, reviewed, and imported.
 This prevents "shot-gunning" bad, not needed, or incorrect configs between environments.
@@ -22,11 +37,23 @@ Expected order of operations:
 
 ## Known Issues
 
+Please see: https://github.com/aplura/cribl_geese/issues for open issues.
+
 ## Release Notes
+
+### v1.1.3
+
+* Improvements
+   * Updated README for links to releases.
+   * Included Snyk Scanning
+   * Now supports Environment variables for authentication
+* New Knowledge Objects
+    * Supports CriblSearch knowledge objects
 
 ### v1.1.2
 
 * Initial Release
+
 ## LICENSE
 
 The MIT License (MIT)
@@ -45,6 +72,11 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Download
+
+Download the latest sdist/whl from https://github.com/aplura/cribl_geese/releases/latest .
+This file will be used in the installation and upgrade sections with the pip command.
 
 ## Install
 
@@ -69,6 +101,10 @@ The default value is `./config.yaml`.
 Only one destination is supported.
 `export` requires source(s).
 Multiple sources are supported.
+
+| :memo:        | The `client_id`, `client_secret`, `username`, and `password` fields support environment variables. Simply replace the value of the key in `config.yaml` with the name of the environment variable (e.g. `CRIBL_SRC_1`) and have the environment variable available. |
+|---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
 
 ```yaml
 # Sources: Array of items

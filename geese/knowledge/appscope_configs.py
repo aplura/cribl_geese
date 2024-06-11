@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class AppScopeConfigs(BaseKnowledge):
+    obj_type = "appscope_configs"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "appscope_configs"
         self.default_types = []
         self.endpoint = "lib/appscope-configs"
         self.group = None

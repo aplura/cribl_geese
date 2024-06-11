@@ -6,9 +6,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Versioning(BaseKnowledge):
+    obj_type = "versioning"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "versioning"
         self.default_types = []
         self.endpoint = "version/commit"
         self.group = None
