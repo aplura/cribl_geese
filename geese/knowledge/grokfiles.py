@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class GrokFiles(BaseKnowledge):
+    obj_type = "grokfiles"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "grokfiles"
         self.default_types = []
         self.endpoint = "lib/grok"
         self.group = None

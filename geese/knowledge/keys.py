@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Keys(BaseKnowledge):
+    obj_type = "keys"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "keys"
         self.default_types = []
         self.endpoint = "system/keys"
         self.group = None

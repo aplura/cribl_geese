@@ -26,3 +26,13 @@ from .authentication import Authentication
 from .groups import Groups
 from .versioning import Versioning
 from .worker import Worker
+from .srch_searches import SrchSearches
+from .srch_datasets import SrchDatasets
+from .srch_macros import SrchMacros
+from .srch_parsers import SrchParsers
+from .srch_dashboards import SrchDashboards
+from .srch_dashboard_categories import SrchDashboardCategories
+from .srch_grok import SrchGrok
+from .srch_regex import SrchRegexes
+from .srch_usage_groups import SrchUsageGroups
+from .srch_dataset_providers import SrchDatasetProviders

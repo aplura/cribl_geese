@@ -7,12 +7,13 @@ from termcolor import colored
 
 
 class BaseKnowledge:
+    obj_type = "base"
+
     def __init__(self, leader, args, logger, **kwargs):
         try:
             if args is None:
                 args = {}
             self.colors = {}
-            self.obj_type = "base"
             self.tuning = {}
             self.supports_groups = True
             if "supports_groups" in kwargs:

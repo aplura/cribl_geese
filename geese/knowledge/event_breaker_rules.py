@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class EventBreakerRules(BaseKnowledge):
+    obj_type = "event_breaker_rules"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "event_breaker_rules"
         self.default_types = []
         self.endpoint = "lib/breakers"
         self.group = None

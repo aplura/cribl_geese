@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Parsers(BaseKnowledge):
+    obj_type = "parsers"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "parsers"
         self.default_types = []
         self.endpoint = "lib/parsers"
         self.group = None

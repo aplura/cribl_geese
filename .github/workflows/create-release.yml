@@ -36,6 +36,10 @@ jobs:
             script: '.| to_entries[] | select(.key | startswith("${{ steps.version.outputs.output }}")) | .value'
             # Output raw strings, not JSON texts
             raw-output: true
+        - name: "Update Docs"
+          run: |
+            cp README.md geese/README.md
+            cp LICENSE geese/LICENSE
         - name: Tag the commit
           run: |
             next_version=${{ steps.version.outputs.output }}
@@ -53,7 +57,7 @@ jobs:
           with:
             files: "dist/*"
             tag_name: ${{ steps.version.outputs.output }}
-            release_name: Release ${{ steps.version.outputs.output }}
+            name: Release ${{ steps.version.outputs.output }}
             body: |
               ${{ steps.releaseNotes.outputs.output }}
             draft: false
