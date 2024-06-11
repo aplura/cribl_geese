@@ -5,9 +5,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Pipelines(BaseKnowledge):
+    obj_type = "pipelines"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "pipelines"
         self.default_types = []
         self.endpoint = "pipelines"
         self.group = None

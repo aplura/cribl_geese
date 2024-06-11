@@ -5,9 +5,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class Certificates(BaseKnowledge):
+    obj_type = "certificates"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "certificates"
         self.endpoint = "system/certificates"
         self.group = None
         if group is not None or fleet is not None:

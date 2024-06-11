@@ -3,21 +3,20 @@ from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
 
 
-class Datasets(BaseKnowledge):
+class SrchSearches(BaseKnowledge):
+    obj_type = "srch_searches"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "datasets"
         self.default_types = []
-        self.endpoint = "m/default_search/search/datasets"
-        self.group = None
+        self.endpoint = "m/default_search/search/saved"
+        self.group = "default_search"
 
     def export(self):
         action = f"export_{self.obj_type}"
         data = self.get(self.endpoint)
         if data.status_code == 200 and data.json():
-            items = [p for p in data.json()["items"] if
-                     (not ("conf" in p and "pack" in p["conf"]) and p[
-                         "type"] not in self.default_types) or self.args.keep_defaults]
+            items = data.json()["items"]
             self._log("info",
                       action=action,
                       source_url=self.url,

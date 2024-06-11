@@ -4,9 +4,10 @@ from geese.knowledge.base import BaseKnowledge
 
 
 class ParquetSchemas(BaseKnowledge):
+    obj_type = "parquet_schemas"
+
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, **kwargs):
         super().__init__(leader, args, logger, **kwargs)
-        self.obj_type = "parquet_schemas"
         self.default_types = []
         self.endpoint = "lib/parquet-schemas"
         self.group = None
