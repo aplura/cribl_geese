@@ -1,4 +1,4 @@
 {
   "1.1.2": "Initial Release to Public",
-  "1.1.3": "* Improvements\n   * Updated README for links to releases.\n   * Included Snyk Scanning\n   * Now supports Environment variables for authentication\n* New Knowledge Objects\n    * Supports CriblSearch knowledge objects"
+  "1.1.3": "* Improvements\n   * Updated README for links to releases.\n   * Included Snyk Scanning\n   * Now supports Environment variables for authentication\n* New Knowledge Objects\n    * Supports CriblSearch knowledge objects\n* Security Updates\n  * Updated `urllib3` to v2.2.2 to address [CVE-2024-37891](https://www.cve.org/CVERecord?id=CVE-2024-37891)"
 }

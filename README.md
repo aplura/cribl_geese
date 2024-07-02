@@ -49,6 +49,8 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
    * Now supports Environment variables for authentication
 * New Knowledge Objects
     * Supports CriblSearch knowledge objects
+* Security Updates
+  * Updated `urllib3` to v2.2.2 to address [CVE-2024-37891](https://www.cve.org/CVERecord?id=CVE-2024-37891)
 
 ### v1.1.2
 
