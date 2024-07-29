@@ -106,6 +106,7 @@ class Packs(BaseKnowledge):
                         if save_pack:
                             directory = os.path.join(self.args.export_dir, "packs")
                             self.save_pack(directory, pack)
+                        packs.append(pack)
             return packs
         except Exception as e:
             self._display_error(f"{action} Unhandled EXPORT Exception: {self.obj_type}", e)
