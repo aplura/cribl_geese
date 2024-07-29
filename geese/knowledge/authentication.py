@@ -21,10 +21,11 @@ class Authentication(BaseKnowledge):
         try:
 
             username = self._get_auth_env("username")
-            password = self._get_auth_env["password"]
+            password = self._get_auth_env("password")
             payload = {"username": username,
                        "password": password}
             response = self.post("auth/login", payload=payload)
+            print(f"{response}")
             if response.json() and "token" in response.json():
                 return response.json()["token"], response.json()
             else:
