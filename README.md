@@ -45,6 +45,8 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 * Security Updates
   * Updated `urllib3` to v2.2.2 to address [CVE-2024-37891](https://www.cve.org/CVERecord?id=CVE-2024-37891)
+* Bugs
+  * Fixed `packs` export, configuration of the pack is now exported into the export config file.
 
 ### v1.1.3
 
