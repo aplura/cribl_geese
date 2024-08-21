@@ -85,7 +85,7 @@ class BaseKnowledge:
 
     def _display(self, string, color=None):
         print(string)
-        self.log.info(string)
+        self._log("info", action="display", color=color, string=string)
 
     def list(self):
         self._log("debug", action="List", message="base_implementation")
