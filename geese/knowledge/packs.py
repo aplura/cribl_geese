@@ -7,7 +7,7 @@ from copy import deepcopy
 from deepdiff import DeepDiff
 from yaml import YAMLError, safe_dump
 
-from geese.knowledge import Secrets, CollectorJobs
+from geese.knowledge import Secrets, CollectorJobs, Routes
 from geese.knowledge.base import BaseKnowledge
 from geese.utils import validate
 
@@ -114,7 +114,7 @@ class Packs(BaseKnowledge):
                         pack["routes"] = routes
                         pack["pipelines"] = pipelines
                         if save_pack:
-                            directory = os.path.join(self.args.import_dir, "packs")
+                            directory = os.path.join(self.args.export_dir, "packs")
                             self.save_pack(directory, pack)
                         packs.append(pack)
             return packs
@@ -157,7 +157,8 @@ class Packs(BaseKnowledge):
             pack_valid_items = ["routes", "pipelines", "functions", "samples", "lookups", "parsers", "global_variables",
                                 "schemas", "readme", "logo"]
             file_location = os.path.join(os.getcwd(), "pack")
-            file_name = f"{item['name']}.crbl"
+            pack_id = item['name']
+            file_name = f"{pack_id}.crbl"
             zip_file = os.path.join(file_location, file_name)
             tmp_location = os.path.join(file_location, uuid.uuid4().hex)
             default_location = os.path.join(tmp_location, "default")
@@ -170,17 +171,18 @@ class Packs(BaseKnowledge):
                 f.write(json.dumps(item))
             for pack_item in pack_valid_items:
                 if pack_item == "routes" and pack_item in pack:
+                    if not os.path.exists(pipeline_location):
+                        os.makedirs(pipeline_location)
                     t = pack[pack_item]
-                    with open(os.path.join(tmp_location, "default", "route.yml"), "w") as f:
+                    with open(os.path.join(pipeline_location, "route.yml"), "w") as f:
                         safe_dump(t[0], f)
                 if pack_item == "pipelines" and pack_item in pack:
                     if not os.path.exists(pipeline_location):
                         os.makedirs(pipeline_location)
                     t = pack[pack_item]
                     for pipeline in t:
-                        p_id = t[pipeline]["id"]
                         conf = t[pipeline]["conf"]
-                        output_path = os.path.join(pipeline_location, p_id)
+                        output_path = os.path.join(pipeline_location, pipeline)
                         if not os.path.exists(output_path):
                             os.makedirs(output_path)
                         output_file = os.path.join(output_path, "conf.yml")
@@ -193,7 +195,7 @@ class Packs(BaseKnowledge):
                 if pack_item == "logo" and pack_item in pack:
                     t = pack[pack_item]
                     with open(os.path.join(tmp_location, "default", "pack.yml"), "w") as f:
-                        safe_dump({"logo": pack["logo"]}, f)
+                        safe_dump({"logo": f"data:image/png;base64,{pack['logo']}"}, f)
             shutil.make_archive(zip_file, 'gztar', tmp_location)
             shutil.move(f"{zip_file}.tar.gz", zip_file)
             shutil.rmtree(tmp_location)
@@ -202,32 +204,58 @@ class Packs(BaseKnowledge):
             response = self._upload_and_install(item, local_location=zip_file)
             if response.status_code == 200:
                 self._display(f"\t{item['name']}: Pack Installed Successfully", self.colors.get("success", "green"))
-                kit_valid_items = ["secrets", "collectors", "inputs"]
+                kit_valid_items = ["secrets", "collectors", "inputs", "routes"]
+                changes = {}
                 for kit_item in kit_valid_items:
                     if kit_item in pack:
                         if kit_item == "secrets":
+                            self._display(f"\tProcessing Kit: Secrets", self.colors.get("info", "blue"))
                             s = Secrets(self.leader, group=self.group, args=self.args)
-                            changes=[]
+                            changes[kit_item] = []
                             for secret in pack[kit_item]:
-                                changes.append(s.update(pack[kit_item][secret]))
-                            statuses = [True if x["updated"]["status"] == "success" else False for x in changes]
+                                changes[kit_item].append(s.update(pack[kit_item][secret]))
+                            statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t{kit_item}: Kit Objects Installed Successfully",
+                                self._display(f"\t\t{kit_item}: Kit Objects Installed Successfully",
                                               self.colors.get("success", "green"))
                             else:
-                                self._display(f"\t{kit_item}: Failed to install all items.",
+                                self._display(f"\t\t{kit_item}: Failed to install all items.",
                                               self.colors.get("error", "red"))
-                            self._display(f"\t{kit_item}: Kit Objects Installed Successfully", self.colors.get("success", "green"))
                         if kit_item == "collectors":
+                            self._display(f"\tProcessing Kit: Collection Jobs", self.colors.get("info", "blue"))
                             s = CollectorJobs(self.leader, group=self.group, args=self.args)
-                            changes=[]
+                            changes[kit_item] = []
                             for job in pack[kit_item]:
-                                changes.append(s.update(pack[kit_item][job]))
-                            statuses = [True if x["updated"]["status"] == "success" else False for x in changes]
+                                changes[kit_item].append(s.update(pack[kit_item][job]))
+                            statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t{kit_item}: Kit Objects Installed Successfully", self.colors.get("success", "green"))
+                                self._display(f"\t\t{kit_item}: Kit Objects Installed Successfully", self.colors.get("success", "green"))
                             else:
-                                self._display(f"\t{kit_item}: Failed to install all items.",
+                                self._display(f"\t\t{kit_item}: Failed to install all items.",
+                                              self.colors.get("error", "red"))
+                        if kit_item == "routes":
+                            self._display(f"\tProcessing Kit: Routes", self.colors.get("info", "blue"))
+                            r = Routes(self.leader, group=self.group, args=self.args)
+                            changes[kit_item] = []
+                            pack_route = {
+                                "clones": [],
+                                "description": "Routes VMWare Data to VMWare Pipelines",
+                                "disabled": False,
+                                "enableOutputExpression": False,
+                                "filter": 'routes == "vmware"',
+                                "final": True,
+                                "id": 'kit-vmware_cbc-route',
+                                "name":" VMWare CBC Route",
+                                "output": "default",
+                                "pipeline": f"pack:{pack_id}"
+                            }
+                            changes[kit_item].append(r.add(pack_route))
+                            statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
+                            if all(statuses):
+                                self._display(f"\t\t{kit_item}: Kit Objects Installed Successfully",
+                                              self.colors.get("success", "green"))
+                            else:
+                                self._display(f"\t\t{kit_item}: Failed to install all items.",
                                               self.colors.get("error", "red"))
             else:
                 self._display(f"\t{item['id']}: Failed to install pack.",self.colors.get("error", "red"))

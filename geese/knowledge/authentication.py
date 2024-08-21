@@ -25,7 +25,6 @@ class Authentication(BaseKnowledge):
             payload = {"username": username,
                        "password": password}
             response = self.post("auth/login", payload=payload)
-            print(f"{response}")
             if response.json() and "token" in response.json():
                 return response.json()["token"], response.json()
             else:
