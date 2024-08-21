@@ -95,7 +95,11 @@ class BaseKnowledge:
         return []
 
     def export(self):
-        self._log("debug", action="Simulation", message="base_implementation")
+        self._log("debug", action="Export", message="base_implementation")
+        return []
+
+    def validate(self, item=None):
+        self._log("debug", action="Validation", message="base_implementation", item=item)
         return []
 
     def _endpoint_by_id(self, item_id=None):

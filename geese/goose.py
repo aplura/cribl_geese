@@ -224,6 +224,8 @@ class Goose(object):
                 return conf_obj.update(item)
             elif operation == "simulate":
                 return conf_obj.simulate(item)
+            elif operation == "validate":
+                return conf_obj.validate(item)
             else:
                 self._display(f"Unhandled Item: {operation} for '{obj_type}'", colors.get("warning"))
                 return {}
@@ -288,6 +290,47 @@ class Goose(object):
             return True, {k: results[k] for k in results if len(results[k]) > 0}
         except Exception as e:
             self._display_error("Simulate Error", e)
+            return False, {}
+
+    def validate(self, items):
+        try:
+            if self.destination is None:
+                raise Exception("Destination Leader to validate against is not defined")
+            results = {}
+            conflict_ids = {}
+            for func in [i for i in items if i in list(self.objects.keys())]:
+                self._display(
+                    f"Validating Import: '{func}' configurations",
+                    colors["info"])
+                if func not in results:
+                    results[func] = {"items": []}
+                if func not in conflict_ids:
+                    conflict_ids[func] = []
+                func_ids = []
+                for individual in items[func]:
+                    self._logger.debug(self._log_line(action="validating_object",
+                                                      type=func,
+                                                      individual=individual,
+                                                      is_string=isinstance(individual, str)))
+                    individual_item = items[func][individual] if isinstance(individual, str) else individual
+                    myID = individual_item["id"] if "id" in individual_item else "UnKnown ID Param"
+                    if myID in func_ids and myID not in conflict_ids[func]:
+                        conflict_ids[func].append(myID)
+                        if "conflicts" not in results[func]:
+                            results[func]["conflicts"] = []
+                        results[func]["conflicts"].append(myID)
+                    else:
+                        func_ids.append(myID)
+                    self._display(f"\tValidating: {myID}", colors["info"])
+                    import_result = self._perform_operation(self.objects[func], "validate", self.destination,
+                                                            item=individual_item)
+                    if "action" in import_result:
+                        self._display(f"\tAction: {import_result['action']}", colors["info"])
+                    results[func]["items"].append(
+                        import_result if import_result is not None else {"status": "error", "result": import_result})
+            return True, {k: results[k] for k in results if len(results[k]) > 0}
+        except Exception as e:
+            self._display_error("Validate Error", e)
             return False, {}
 
     # pipelines, inputs, outputs, packs, lookups, globals, parsers, regexes, event_breakers, schemas, parquet_scheemas,
