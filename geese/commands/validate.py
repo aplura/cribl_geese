@@ -47,37 +47,36 @@ def _validate(self, args):
                         f.write(r.content)
                 else:
                     self._display(f"\t\tFailed: {api_spec}. {r.text}", colors.get("error", "red"))
-            dl_location = ""
-        # ko = knowledge_objects if args.all_objects else [a for a in args.objects if a in knowledge_objects and validate_knowledge(
-        #     a, self.tuning_object)]
-        # if not os.path.exists(args.import_dir):
-        #     self._display(f"Export Directory does not exist: {args.import_dir}", colors.get("error", "red"))
-        #     sys.exit(ec.LOCATION_NOT_FOUND)
-        # with open(os.path.join(args.import_dir, f"{args.import_file}"), "r") as of:
-        #     if args.import_file.endswith(".json"):
-        #         file_data = json.load(of)
-        #     else:
-        #         file_data = yaml.safe_load(of)
-        #     for worker_group in file_data:
-        #         all_objects = {k: v for k, v in file_data[worker_group].items() if k in ko}
-        # filtered_objects = {}
-        # for record in all_objects:
-        #     for check_object in all_objects[record]:
-        #         c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
-        #         if validate(record, c_object, tuning_object):
-        #             if record not in filtered_objects:
-        #                 filtered_objects[record] = []
-        #             if args.use_namespace and "id" in c_object:
-        #                 c_object["id"] = check_object
-        #             filtered_objects[record].append(c_object)
-        # all_good, results = self.validate(filtered_objects)
-        # if args.save:
-        #     with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
-        #         if args.save_file.endswith(".json"):
-        #             of.write(json.dumps(results))
-        #         else:
-        #             safe_dump(results, of)
-        # self._display(exported_objects, colors.get("info", "green"))
+        ko = knowledge_objects if args.all_objects else [a for a in args.objects if a in knowledge_objects and validate_knowledge(
+            a, self.tuning_object)]
+        if not os.path.exists(args.import_dir):
+            self._display(f"Export Directory does not exist: {args.import_dir}", colors.get("error", "red"))
+            sys.exit(ec.LOCATION_NOT_FOUND)
+        with open(os.path.join(args.import_dir, f"{args.import_file}"), "r") as of:
+            if args.import_file.endswith(".json"):
+                file_data = json.load(of)
+            else:
+                file_data = yaml.safe_load(of)
+            for worker_group in file_data:
+                all_objects = {k: v for k, v in file_data[worker_group].items() if k in ko}
+        filtered_objects = {}
+        for record in all_objects:
+            for check_object in all_objects[record]:
+                c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
+                if validate(record, c_object, tuning_object):
+                    if record not in filtered_objects:
+                        filtered_objects[record] = []
+                    if args.use_namespace and "id" in c_object:
+                        c_object["id"] = check_object
+                    filtered_objects[record].append(c_object)
+        all_good, results = self.validate(filtered_objects)
+        if args.save:
+            with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
+                if args.save_file.endswith(".json"):
+                    of.write(json.dumps(results))
+                else:
+                    safe_dump(results, of)
+        self._display("Validation Complete", colors.get("info", "green"))
     except YAMLError as err:
         self._logger.error("YAMLError: {}".format(err))
         self._display("YAML Error: {}".format(err), "red")
