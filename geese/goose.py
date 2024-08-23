@@ -27,6 +27,7 @@ def display(message, color="blue"):
 
 class Goose(object):
     objects = {}
+    validate_spec = {"get": {}, "post": {}}
 
     def __init__(self, cmd, args, **kwargs):
         kl = KennyLoggins()
@@ -216,7 +217,7 @@ class Goose(object):
         obj_type = "base"
         try:
             conf_obj = cls(leader, self._args, self._logger, group=group, fleet=fleet,
-                           display=self._display)
+                           display=self._display, validate_spec=self.validate_spec)
             obj_type = conf_obj.get_ot()
             if operation == "export":
                 return conf_obj.export()

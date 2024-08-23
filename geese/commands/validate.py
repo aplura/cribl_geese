@@ -69,6 +69,9 @@ def _validate(self, args):
                     if args.use_namespace and "id" in c_object:
                         c_object["id"] = check_object
                     filtered_objects[record].append(c_object)
+        api_spec = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "constants", "api_specs", f"{args.api_version}.yaml")
+        with open(api_spec, "r") as of:
+            self.validate_spec = of.read()
         all_good, results = self.validate(filtered_objects)
         if args.save:
             with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
@@ -99,6 +102,9 @@ parser.add_argument("--all-objects",
 parser.add_argument("--use-namespace",
                     help="Validate all config options with a namespace",
                     action='store_true')
+parser.add_argument("--api-version",
+                    help="What version of the API to validate against.",
+                    default=list(api_specs.keys())[0], choices=list(api_specs.keys()))
 parser.add_argument("--import-dir",
                     help="Where to import the configurations from for validation:  directory",
                     default=export_cmd["directory"])

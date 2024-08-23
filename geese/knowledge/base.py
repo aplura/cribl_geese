@@ -15,7 +15,11 @@ class BaseKnowledge:
                 args = {}
             self.colors = {}
             self.tuning = {}
+            self.validate_spec = {"get": {}, "post": {}}
+            self.api_path = "/system/info"
             self.supports_groups = True
+            if "validate_spec" in kwargs:
+                self.validate_spec = kwargs["validate_spec"]
             if "supports_groups" in kwargs:
                 self.supports_groups = kwargs["supports_groups"]
             if "display" in kwargs.keys():
