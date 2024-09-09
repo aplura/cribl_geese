@@ -69,9 +69,14 @@ def _validate(self, args):
                     if args.use_namespace and "id" in c_object:
                         c_object["id"] = check_object
                     filtered_objects[record].append(c_object)
-        api_spec = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "constants", "api_specs", f"{args.api_version}.yaml")
+        api_spec = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "..",
+                                "constants",
+                                "api_specs",
+                                f"{args.api_version}.yaml")
         with open(api_spec, "r") as of:
-            self.validate_spec = of.read()
+            self.validate_spec = yaml.safe_load(of)
+            self.spec_file = api_spec
         all_good, results = self.validate(filtered_objects)
         if args.save:
             with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:

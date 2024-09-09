@@ -2,6 +2,9 @@ import os
 import sys
 import requests
 import json
+
+from jsonschema.exceptions import ValidationError
+from openapi_schema_validator import validate
 from deepdiff import DeepDiff
 from termcolor import colored
 
@@ -18,19 +21,21 @@ class BaseKnowledge:
             self.validate_spec = {"get": {}, "post": {}}
             self.api_path = "/system/info"
             self.supports_groups = True
-            if "validate_spec" in kwargs:
-                self.validate_spec = kwargs["validate_spec"]
-            if "supports_groups" in kwargs:
-                self.supports_groups = kwargs["supports_groups"]
+            self.openapi = None
+            self.log = logger
             if "display" in kwargs.keys():
                 self._display = kwargs["display"]
+            if "validate_spec" in kwargs:
+                self.validate_spec = kwargs["validate_spec"]
+                self.openapi = validate
+            if "supports_groups" in kwargs:
+                self.supports_groups = kwargs["supports_groups"]
             if "colors" in kwargs.keys():
                 self.colors = kwargs["colors"]
             if "tuning" in kwargs.keys():
                 self.tuning = kwargs["tuning"]
             self.namespace = args["namespace"] if "namespace" in args else None
             self.group = leader["group"] if "group" in leader and len(leader["group"]) > 0 else None
-            self.log = logger
             self.leader = leader
             self.endpoint = None
             self.url = leader["url"]
@@ -102,9 +107,64 @@ class BaseKnowledge:
         self._log("debug", action="Export", message="base_implementation")
         return []
 
+    def _load_prop_value(self, ref):
+        loaded_spec = self.validate_spec
+        spec_list = ref.split("/")
+        for sl in spec_list:
+            if sl == "#":
+                continue
+            loaded_spec = loaded_spec.get(sl, {})
+        return loaded_spec
+
+    def _load_property(self, s_prop):
+        if isinstance(s_prop, dict):
+            for props in s_prop:
+                if isinstance(s_prop[props], dict):
+                    v = self._load_property(s_prop[props])
+                    s_prop[props] = v
+                elif "$ref" == props:
+                    v = self._load_prop_value(s_prop["$ref"])
+                    s_prop = self._load_property(v)
+                else:
+                    print(f"IS SUB: {type(s_prop[props])}")
+        else:
+            print(f"IS: {type(s_prop)}")
+        return s_prop
+
+    def _load_spec(self, spec_name=None):
+        s = None
+        if spec_name:
+            s = (self.validate_spec.get("paths")
+                 .get(spec_name, {})
+                 .get("post", {})
+                 .get("requestBody", {})
+                 .get("content", {})
+                 .get("application/json", {})
+                 .get("schema", {}))
+            if "$ref" in s:
+                s = self._load_prop_value(s["$ref"])
+            s = self._load_property(s)
+            print(s)
+        return s
+
     def validate(self, item=None):
         self._log("debug", action="Validation", message="base_implementation", item=item)
-        return []
+        errors = {"id": self.api_path, "result": ""}
+        if self.openapi:
+            for k in list(self.validate_spec.get("paths", {}).keys()):
+                if self.api_path in k:
+                    spec = self._load_spec(spec_name=k)
+                    if spec:
+                        try:
+                            self.openapi(item, spec)
+                            self._display(f"\t\t{k}: valid", self.colors.get("success", "green"))
+                            errors["result"] = "success"
+                            errors["message"] = f"{k}: valid"
+                        except ValidationError as e:
+                            self._display(f"\t\t{k}: {e.message}", self.colors.get("error", "red"))
+                            errors["result"] = "failure"
+                            errors["message"] = f"{k}: {e.message}"
+        return errors
 
     def _endpoint_by_id(self, item_id=None):
         return f'{self.endpoint}/{item_id if item_id is not None else ""}'
