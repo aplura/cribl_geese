@@ -10,6 +10,7 @@ class Groups(BaseKnowledge):
         super().__init__(leader, args, logger, **kwargs)
         self.default_types = []
         self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else "master/groups"
+        self.api_path = f"/{self.endpoint}"
         self.group = None
         self.supports_groups = False
 

@@ -11,6 +11,7 @@ class Pipelines(BaseKnowledge):
         super().__init__(leader, args, logger, **kwargs)
         self.default_types = []
         self.endpoint = "pipelines"
+        self.api_path = f"/{self.endpoint}"
         self.group = None
         if group is not None or fleet is not None:
             self.group = fleet if fleet is not None else group

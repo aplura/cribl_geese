@@ -48373,7 +48373,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   "/system/teams/{id}/users":
     get:
       tags:
@@ -48410,7 +48410,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
     post:
       tags:
         - teams
@@ -48452,7 +48452,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   /system/users:
     get:
       tags:
@@ -48574,7 +48574,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
     delete:
       tags: *a31
       summary: Delete User
@@ -48623,7 +48623,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   /search/dashboard-categories:
     get:
       tags:
@@ -49900,7 +49900,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   "/lib/protobuf-libraries/{id}/encodings/{encid}":
     get:
       tags:
@@ -49937,13 +49937,13 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
         - name: encid
           in: path
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   /lib/protobuf-libraries/:
     get:
       tags:
@@ -49980,7 +49980,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   "/lib/protobuf-libraries/{id}/encodings":
     get:
       tags:
@@ -50017,7 +50017,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
   /lib/regex:
     get:
       tags:
@@ -50503,7 +50503,8 @@ paths:
       responses: *a100
       parameters:
         - &a103
-          type: string
+          schema:
+            type: string
           name: pack
           in: path
           required: true
@@ -51101,7 +51102,8 @@ paths:
       responses: *a116
       parameters:
         - &a119
-          type: string
+          schema:
+            type: string
           name: pack
           in: path
           required: true
@@ -51280,7 +51282,8 @@ paths:
       responses: *a126
       parameters:
         - &a129
-          type: string
+          schema:
+            type: string
           name: pack
           in: path
           required: true
@@ -51387,7 +51390,8 @@ paths:
       responses: *a132
       parameters:
         - &a135
-          type: string
+          schema:
+            type: string
           name: pack
           in: path
           required: true
@@ -51699,7 +51703,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
     put:
       tags:
         - edgeAppScopeProcesses
@@ -52165,10 +52169,12 @@ paths:
         - in: query
           description: Authorization Code
           name: code
-          type: string
+          schema:
+            type: string
         - in: query
           name: state
-          type: string
+          schema:
+            type: string
       responses:
         "200":
           description: Authorization success
@@ -52260,10 +52266,12 @@ paths:
         - in: query
           description: Logout request object
           name: SAMLResponse
-          type: string
+          schema:
+            type: string
         - in: query
           name: RelayState
-          type: string
+          schema:
+            type: string
       responses:
         "200":
           description: Logout success
@@ -52319,10 +52327,12 @@ paths:
         - in: query
           description: Authentication request object
           name: SAMLResponse
-          type: string
+          schema:
+            type: string
         - in: query
           name: RelayState
-          type: string
+          schema:
+            type: string
       responses:
         "200":
           description: Authentication success
@@ -52833,11 +52843,13 @@ paths:
         - name: group
           in: path
           required: true
-          type: string
+          schema:
+            type: string
         - name: version
           in: path
           required: true
-          type: string
+          schema:
+            type: string
       responses:
         "200":
           description: Get contents of a config bundle
@@ -56710,7 +56722,8 @@ paths:
       responses: *a154
       parameters:
         - &a156
-          type: string
+          schema:
+            type: string
           name: pack
           in: path
           required: true
@@ -57450,7 +57463,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
         - name: type
           in: query
           required: false
@@ -57501,7 +57514,7 @@ paths:
           required: true
           schema:
             type: string
-          description: null
+          description: "No Description"
         - name: type
           in: query
           required: false

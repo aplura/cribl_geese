@@ -24,6 +24,7 @@ class Packs(BaseKnowledge):
         try:
             self.default_types = []
             self.endpoint = "packs"
+            self.api_path = f"/{self.endpoint}"
             self.group = None
             if group is not None or fleet is not None:
                 self.group = fleet if fleet is not None else group

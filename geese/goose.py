@@ -28,6 +28,7 @@ def display(message, color="blue"):
 class Goose(object):
     objects = {}
     validate_spec = {"get": {}, "post": {}}
+    spec_file = None
 
     def __init__(self, cmd, args, **kwargs):
         kl = KennyLoggins()
@@ -217,7 +218,7 @@ class Goose(object):
         obj_type = "base"
         try:
             conf_obj = cls(leader, self._args, self._logger, group=group, fleet=fleet,
-                           display=self._display, validate_spec=self.validate_spec)
+                           display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
             obj_type = conf_obj.get_ot()
             if operation == "export":
                 return conf_obj.export()
@@ -325,8 +326,6 @@ class Goose(object):
                     self._display(f"\tValidating: {myID}", colors["info"])
                     import_result = self._perform_operation(self.objects[func], "validate", self.destination,
                                                             item=individual_item)
-                    if "action" in import_result:
-                        self._display(f"\tAction: {import_result['action']}", colors["info"])
                     results[func]["items"].append(
                         import_result if import_result is not None else {"status": "error", "result": import_result})
             return True, {k: results[k] for k in results if len(results[k]) > 0}

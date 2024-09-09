@@ -29,6 +29,7 @@ dependencies = [
     "PyYAML",
     "termcolor",
     "urllib3>=2.2.2",
+    "openapi-schema-validator"
 ]
 
 [project.scripts]

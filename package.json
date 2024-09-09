@@ -7,7 +7,7 @@
       "patterns": [
         "geese"
       ],
-      "extensions": "py"
+      "extensions": ["py", "yaml"]
     }
   },
   "scripts": {
