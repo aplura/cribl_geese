@@ -125,6 +125,8 @@ class BaseKnowledge:
                 elif "$ref" == props:
                     v = self._load_prop_value(s_prop["$ref"])
                     s_prop = self._load_property(v)
+                elif isinstance(s_prop, list):
+                    s_prop[props] = [self._load_property(x) for x in s_prop[props]]
                 else:
                     print(f"IS SUB: {type(s_prop[props])}")
         else:
