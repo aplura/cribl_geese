@@ -333,6 +333,52 @@ class Goose(object):
             self._display_error("Validate Error", e)
             return False, {}
 
+    def _load_prop_value(self, ref):
+        loaded_spec = self.validate_spec
+        spec_list = ref.split("/")
+        for sl in spec_list:
+            if sl == "#":
+                continue
+            loaded_spec = loaded_spec.get(sl, {})
+        return loaded_spec
+
+    def _load_property(self, s_prop):
+        if isinstance(s_prop, dict):
+            for props in s_prop:
+                if isinstance(s_prop[props], dict):
+                    v = self._load_property(s_prop[props])
+                    s_prop[props] = v
+                elif "$ref" == props:
+                    v = self._load_prop_value(s_prop["$ref"])
+                    s_prop = self._load_property(v)
+                elif isinstance(s_prop[props], list):
+                    s_prop[props] = [self._load_property(x) for x in s_prop[props]]
+                elif isinstance(s_prop[props], str):
+                    pass
+                else:
+                    pass
+                    # print(f"IS SUB: {type(s_prop[props])}")
+        elif isinstance(s_prop, str):
+            pass
+        else:
+            pass
+            # print(f"IS: {type(s_prop)}")
+        return s_prop
+
+    def load_spec(self, spec):
+        self.validate_spec = spec
+        for path in list(spec.get("paths", {}).keys()):
+            s = (spec["paths"]
+                 .get(path, {})
+                 .get("post", {})
+                 .get("requestBody", {})
+                 .get("content", {})
+                 .get("application/json", {})
+                 .get("schema", {}))
+            sp = self._load_property(s)
+            if len(list(sp.keys())) > 0:
+                self.validate_spec["paths"][path]["post"]["requestBody"]["content"]["application/json"]["schema"] = sp
+
     # pipelines, inputs, outputs, packs, lookups, globals, parsers, regexes, event_breakers, schemas, parquet_scheemas,
     # database, appscore, auth_config, notifications, mappings, fleet mappings, routes
     def perform_import(self, items):
