@@ -74,10 +74,12 @@ def _validate(self, args):
                                 "constants",
                                 "api_specs",
                                 f"{args.api_version}.yaml")
+        self._display(f"Loading Spec {args.api_version}", colors.get("info", "blue"))
         with open(api_spec, "r") as of:
             spec = yaml.safe_load(of)
             self.load_spec(spec)
             self.spec_file = api_spec
+        self._display(f"Loading Spec {args.api_version}: Complete", colors.get("info", "blue"))
         all_good, results = self.validate(filtered_objects)
         if args.save:
             with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
