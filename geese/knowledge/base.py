@@ -116,27 +116,28 @@ class BaseKnowledge:
                  .get("requestBody", {})
                  .get("content", {})
                  .get("application/json", {})
-                 .get("schema", {}))
-            # print(spec_name, s, self.validate_spec.get("paths").get(spec_name, {}).get("post", {}).get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema", {}).keys())
+                 .get("schema", None))
         return s
 
-    def validate(self, item=None):
+    def validate(self, item=None, api_path=None):
+        if api_path is None:
+            api_path = self.api_path
         self._log("debug", action="Validation", message="base_implementation", item=item)
-        errors = {"id": self.api_path, "result": ""}
-        if self.openapi:
-            for k in list(self.validate_spec.get("paths", {}).keys()):
-                if self.api_path == k:
-                    spec = self._load_spec(spec_name=k)
-                    if spec:
-                        try:
-                            self.openapi(item, spec)
-                            self._display(f"\t\t{k}: valid", self.colors.get("success", "green"))
-                            errors["result"] = "success"
-                            errors["message"] = f"{k}: valid"
-                        except ValidationError as e:
-                            self._display(f"\t\t{k}: {e.message}", self.colors.get("error", "red"))
-                            errors["result"] = "failure"
-                            errors["message"] = f"{k}: {e.message}"
+        errors = {"id": api_path, "result": ""}
+        if self.openapi and api_path in list(self.validate_spec.get("paths", {}).keys()):
+            spec = self._load_spec(spec_name=api_path)
+            if spec:
+                try:
+                    self.openapi(item, spec)
+                    self._display(f"\t\t{api_path}: valid", self.colors.get("success", "green"))
+                    errors["result"] = "success"
+                    errors["message"] = f"{api_path}: valid"
+                except ValidationError as e:
+                    self._display(f"\t\t{api_path}: {e.message}", self.colors.get("error", "red"))
+                    errors["result"] = "failure"
+                    errors["message"] = f"{api_path}: {e.message}"
+            else:
+                self._display(f"\t\t{api_path}: invalid schema, or not found", self.colors.get("warning", "yellow"))
         return errors
 
     def _endpoint_by_id(self, item_id=None):

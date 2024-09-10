@@ -22177,7 +22177,7 @@ components:
                 type: string
                 title: Content name
                 description: The name of the Wiz query
-                pattern: ^[a-zA-Z0-9_-\s]+$
+                pattern: '^[a-zA-Z0-9_-\s]+$'
               contentDescription:
                 type: string
                 title: Description
