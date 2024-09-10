@@ -75,7 +75,8 @@ def _validate(self, args):
                                 "api_specs",
                                 f"{args.api_version}.yaml")
         with open(api_spec, "r") as of:
-            self.validate_spec = yaml.safe_load(of)
+            spec = yaml.safe_load(of)
+            self.load_spec(spec)
             self.spec_file = api_spec
         all_good, results = self.validate(filtered_objects)
         if args.save:

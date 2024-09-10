@@ -107,32 +107,6 @@ class BaseKnowledge:
         self._log("debug", action="Export", message="base_implementation")
         return []
 
-    def _load_prop_value(self, ref):
-        loaded_spec = self.validate_spec
-        spec_list = ref.split("/")
-        for sl in spec_list:
-            if sl == "#":
-                continue
-            loaded_spec = loaded_spec.get(sl, {})
-        return loaded_spec
-
-    def _load_property(self, s_prop):
-        if isinstance(s_prop, dict):
-            for props in s_prop:
-                if isinstance(s_prop[props], dict):
-                    v = self._load_property(s_prop[props])
-                    s_prop[props] = v
-                elif "$ref" == props:
-                    v = self._load_prop_value(s_prop["$ref"])
-                    s_prop = self._load_property(v)
-                elif isinstance(s_prop, list):
-                    s_prop[props] = [self._load_property(x) for x in s_prop[props]]
-                else:
-                    print(f"IS SUB: {type(s_prop[props])}")
-        else:
-            print(f"IS: {type(s_prop)}")
-        return s_prop
-
     def _load_spec(self, spec_name=None):
         s = None
         if spec_name:
@@ -143,10 +117,7 @@ class BaseKnowledge:
                  .get("content", {})
                  .get("application/json", {})
                  .get("schema", {}))
-            if "$ref" in s:
-                s = self._load_prop_value(s["$ref"])
-            s = self._load_property(s)
-            print(s)
+            # print(spec_name, s, self.validate_spec.get("paths").get(spec_name, {}).get("post", {}).get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema", {}).keys())
         return s
 
     def validate(self, item=None):
@@ -154,7 +125,7 @@ class BaseKnowledge:
         errors = {"id": self.api_path, "result": ""}
         if self.openapi:
             for k in list(self.validate_spec.get("paths", {}).keys()):
-                if self.api_path in k:
+                if self.api_path == k:
                     spec = self._load_spec(spec_name=k)
                     if spec:
                         try:
