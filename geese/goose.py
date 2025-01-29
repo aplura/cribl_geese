@@ -27,6 +27,8 @@ def display(message, color="blue"):
 
 class Goose(object):
     objects = {}
+    validate_spec = {"get": {}, "post": {}}
+    spec_file = None
 
     def __init__(self, cmd, args, **kwargs):
         kl = KennyLoggins()
@@ -216,7 +218,7 @@ class Goose(object):
         obj_type = "base"
         try:
             conf_obj = cls(leader, self._args, self._logger, group=group, fleet=fleet,
-                           display=self._display)
+                           display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
             obj_type = conf_obj.get_ot()
             if operation == "export":
                 return conf_obj.export()
@@ -224,6 +226,8 @@ class Goose(object):
                 return conf_obj.update(item)
             elif operation == "simulate":
                 return conf_obj.simulate(item)
+            elif operation == "validate":
+                return conf_obj.validate(item)
             else:
                 self._display(f"Unhandled Item: {operation} for '{obj_type}'", colors.get("warning"))
                 return {}
@@ -289,6 +293,91 @@ class Goose(object):
         except Exception as e:
             self._display_error("Simulate Error", e)
             return False, {}
+
+    def validate(self, items):
+        try:
+            if self.destination is None:
+                raise Exception("Destination Leader to validate against is not defined")
+            results = {}
+            conflict_ids = {}
+            for func in [i for i in items if i in list(self.objects.keys())]:
+                self._display(
+                    f"Validating Import: '{func}' configurations",
+                    colors["info"])
+                if func not in results:
+                    results[func] = {"items": []}
+                if func not in conflict_ids:
+                    conflict_ids[func] = []
+                func_ids = []
+                for individual in items[func]:
+                    self._logger.debug(self._log_line(action="validating_object",
+                                                      type=func,
+                                                      individual=individual,
+                                                      is_string=isinstance(individual, str)))
+                    individual_item = items[func][individual] if isinstance(individual, str) else individual
+                    myID = individual_item["id"] if "id" in individual_item else "UnKnown ID Param"
+                    if myID in func_ids and myID not in conflict_ids[func]:
+                        conflict_ids[func].append(myID)
+                        if "conflicts" not in results[func]:
+                            results[func]["conflicts"] = []
+                        results[func]["conflicts"].append(myID)
+                    else:
+                        func_ids.append(myID)
+                    self._display(f"\tValidating: {myID}", colors["info"])
+                    import_result = self._perform_operation(self.objects[func], "validate", self.destination,
+                                                            item=individual_item)
+                    results[func]["items"].append(
+                        import_result if import_result is not None else {"status": "error", "result": import_result})
+            return True, {k: results[k] for k in results if len(results[k]) > 0}
+        except Exception as e:
+            self._display_error("Validate Error", e)
+            return False, {}
+
+    def _load_prop_value(self, ref):
+        loaded_spec = self.validate_spec
+        spec_list = ref.split("/")
+        for sl in spec_list:
+            if sl == "#":
+                continue
+            loaded_spec = loaded_spec.get(sl, {})
+        return loaded_spec
+
+    def _load_property(self, s_prop):
+        if isinstance(s_prop, dict):
+            for props in s_prop:
+                if isinstance(s_prop[props], dict):
+                    v = self._load_property(s_prop[props])
+                    s_prop[props] = v
+                elif "$ref" == props:
+                    v = self._load_prop_value(s_prop["$ref"])
+                    s_prop = self._load_property(v)
+                elif isinstance(s_prop[props], list):
+                    s_prop[props] = [self._load_property(x) for x in s_prop[props]]
+                elif isinstance(s_prop[props], str):
+                    pass
+                else:
+                    pass
+                    # print(f"IS SUB: {type(s_prop[props])}")
+        elif isinstance(s_prop, str):
+            pass
+        else:
+            pass
+            # print(f"IS: {type(s_prop)}")
+        return s_prop
+
+    def load_spec(self, spec):
+        self.validate_spec = spec
+        for path in list(spec.get("paths", {}).keys()):
+            s = (spec["paths"]
+                 .get(path, {})
+                 .get("post", {})
+                 .get("requestBody", {})
+                 .get("content", {})
+                 .get("application/json", {})
+                 .get("schema", {}))
+            sp = self._load_property(s)
+            if len(list(sp.keys())) > 0:
+                self.validate_spec["paths"][path]["post"]["requestBody"]["content"]["application/json"]["schema"] = sp
 
     # pipelines, inputs, outputs, packs, lookups, globals, parsers, regexes, event_breakers, schemas, parquet_scheemas,
     # database, appscore, auth_config, notifications, mappings, fleet mappings, routes

@@ -2,6 +2,9 @@ import os
 import sys
 import requests
 import json
+
+from jsonschema.exceptions import ValidationError
+from openapi_schema_validator import validate
 from deepdiff import DeepDiff
 from termcolor import colored
 
@@ -15,18 +18,24 @@ class BaseKnowledge:
                 args = {}
             self.colors = {}
             self.tuning = {}
+            self.validate_spec = {"get": {}, "post": {}}
+            self.api_path = "/system/info"
             self.supports_groups = True
-            if "supports_groups" in kwargs:
-                self.supports_groups = kwargs["supports_groups"]
+            self.openapi = None
+            self.log = logger
             if "display" in kwargs.keys():
                 self._display = kwargs["display"]
+            if "validate_spec" in kwargs:
+                self.validate_spec = kwargs["validate_spec"]
+                self.openapi = validate
+            if "supports_groups" in kwargs:
+                self.supports_groups = kwargs["supports_groups"]
             if "colors" in kwargs.keys():
                 self.colors = kwargs["colors"]
             if "tuning" in kwargs.keys():
                 self.tuning = kwargs["tuning"]
             self.namespace = args["namespace"] if "namespace" in args else None
             self.group = leader["group"] if "group" in leader and len(leader["group"]) > 0 else None
-            self.log = logger
             self.leader = leader
             self.endpoint = None
             self.url = leader["url"]
@@ -85,7 +94,7 @@ class BaseKnowledge:
 
     def _display(self, string, color=None):
         print(string)
-        self.log.info(string)
+        self._log("info", action="display", color=color, string=string)
 
     def list(self):
         self._log("debug", action="List", message="base_implementation")
@@ -95,8 +104,41 @@ class BaseKnowledge:
         return []
 
     def export(self):
-        self._log("debug", action="Simulation", message="base_implementation")
+        self._log("debug", action="Export", message="base_implementation")
         return []
+
+    def _load_spec(self, spec_name=None):
+        s = None
+        if spec_name:
+            s = (self.validate_spec.get("paths")
+                 .get(spec_name, {})
+                 .get("post", {})
+                 .get("requestBody", {})
+                 .get("content", {})
+                 .get("application/json", {})
+                 .get("schema", None))
+        return s
+
+    def validate(self, item=None, api_path=None):
+        if api_path is None:
+            api_path = self.api_path
+        self._log("debug", action="Validation", message="base_implementation", item=item)
+        errors = {"id": api_path, "result": ""}
+        if self.openapi and api_path in list(self.validate_spec.get("paths", {}).keys()):
+            spec = self._load_spec(spec_name=api_path)
+            if spec:
+                try:
+                    self.openapi(item, spec)
+                    self._display(f"\t\t{api_path}: valid", self.colors.get("success", "green"))
+                    errors["result"] = "success"
+                    errors["message"] = f"{api_path}: valid"
+                except ValidationError as e:
+                    self._display(f"\t\t{api_path}: {e.message}", self.colors.get("error", "red"))
+                    errors["result"] = "failure"
+                    errors["message"] = f"{api_path}: {e.message}"
+            else:
+                self._display(f"\t\t{api_path}: invalid schema, or not found", self.colors.get("warning", "yellow"))
+        return errors
 
     def _endpoint_by_id(self, item_id=None):
         return f'{self.endpoint}/{item_id if item_id is not None else ""}'

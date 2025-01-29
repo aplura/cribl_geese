@@ -21,7 +21,7 @@ class Authentication(BaseKnowledge):
         try:
 
             username = self._get_auth_env("username")
-            password = self._get_auth_env["password"]
+            password = self._get_auth_env("password")
             payload = {"username": username,
                        "password": password}
             response = self.post("auth/login", payload=payload)
