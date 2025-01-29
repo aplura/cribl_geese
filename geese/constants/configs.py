@@ -24,6 +24,10 @@ simulate_cmd = {
     "directory": os.path.join(root_folder, "simulation"),
     "file": "simulate_results.yaml"
 }
+validate_cmd = {
+    "directory": os.path.join(root_folder, "validation"),
+    "file": "validate_results.yaml"
+}
 tuning = {
     "file": None
 }

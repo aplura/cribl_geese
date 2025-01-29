@@ -7,4 +7,4 @@ from geese import version
 class TestStatic:
 
     def test_version(self):
-        assert version.__version__ == '1.1.3'
+        assert version.__version__ == '1.1.4'

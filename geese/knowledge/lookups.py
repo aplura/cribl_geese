@@ -14,6 +14,7 @@ class Lookups(BaseKnowledge):
         try:
             self.default_types = []
             self.endpoint = "system/lookups"
+            self.api_path = f"/{self.endpoint}"
             self.group = None
             if group is not None or fleet is not None:
                 self.group = fleet if fleet is not None else group
