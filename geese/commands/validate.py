@@ -35,18 +35,6 @@ def _validate(self, args):
         if args.list_objects:
             self._display(f"Available objects: {', '.join(knowledge_objects)}", colors.get("info", "blue"))
             sys.exit(ec.ALL_IS_WELL)
-        if args.download:
-            api_specs_location = os.path.abspath(os.path.join(os.getcwd(), args.save_dir, "api_specs"))
-            if not os.path.isdir(api_specs_location):
-                os.makedirs(api_specs_location)
-            for api_spec in api_specs:
-                self._display(f"\tGathering Version: {api_spec}", colors.get("info", "blue"))
-                r = requests.get(api_specs[api_spec])
-                if r.status_code == 200:
-                    with open(os.path.join(api_specs_location, f"{api_spec}.yaml"), "wb") as f:
-                        f.write(r.content)
-                else:
-                    self._display(f"\t\tFailed: {api_spec}. {r.text}", colors.get("error", "red"))
         ko = knowledge_objects if args.all_objects else [a for a in args.objects if a in knowledge_objects and validate_knowledge(
             a, self.tuning_object)]
         if not os.path.exists(args.import_dir):
@@ -120,7 +108,6 @@ parser.add_argument("--import-file",
                     help="Where to import the configurations from for validation:  filename",
                     default=export_cmd["file"])
 parser.add_argument("--save", help="Save the results of the validation", action='store_true')
-parser.add_argument("--download", help="Download the specs", action='store_true')
 parser.add_argument("--save-file",
                     help="Save the results of the validation to this file",
                     default=validate_cmd["file"])

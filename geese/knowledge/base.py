@@ -60,6 +60,15 @@ class BaseKnowledge:
     def supports_groups(self):
         return self.supports_groups
 
+    def _gen_save_dir(self, base_dir, ko_type):
+        grp = self.group if self.group else "default"
+        dur = os.path.join(base_dir, grp, ko_type)
+        if self.args.use_namespace:
+            dur = os.path.join(base_dir, self.leader["namespace"], grp, ko_type)
+        if not os.path.exists(dur):
+            os.makedirs(dur)
+        return dur
+
     def _display_error(self, msg, err, exit_code=False):
         emsg, fname, fnum, etype = self.get_exception_info(err)
         erre = [
@@ -185,7 +194,8 @@ class BaseKnowledge:
                 response = requests.Session().post(url, data=pay_me, headers=headers, verify=self.verify_ssl)
             else:
                 response = requests.post(url, data=pay_me, headers=headers, verify=self.verify_ssl)
-            self._log("debug", stage="response", response=response.text, status=response.status_code, method="post", url=url, headers=headers, payload=pay_me, stream=stream,
+            self._log("debug", stage="response", response=response.text, status=response.status_code, method="post",
+                      url=url, headers=headers, payload=pay_me, stream=stream,
                       use_session=use_session)
             return response
         except Exception as e:
