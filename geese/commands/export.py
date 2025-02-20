@@ -9,6 +9,18 @@ from geese.constants.common_arguments import add_arguments
 from geese.constants.configs import colors, export_cmd, tuning
 # Check for a "get diff" api call
 
+def _create_dir(export_dir, grp, namespace=None):
+    dur = os.path.join(export_dir, namespace, grp, "configs") if namespace else os.path.join(export_dir, grp, "configs")
+    if not os.path.exists(dur):
+        os.makedirs(dur)
+    return dur
+
+def _write_file(export_dir, export_file, data):
+    with open(os.path.join(export_dir, export_file), "w") as of:
+        if export_file.endswith(".json"):
+            of.write(json.dumps(data, indent=4))
+        else:
+            safe_dump(data, of)
 
 def _export_leader(self, args):
     self._logger.debug("action=export_leader")
@@ -69,11 +81,35 @@ def _export_leader(self, args):
                                     c_obj[oop][k].append(item)
         if not os.path.exists(args.export_dir):
             os.makedirs(args.export_dir)
-        with open(os.path.join(args.export_dir, f"{args.export_file}"), "w") as of:
-            if args.export_file.endswith(".json"):
-                of.write(json.dumps(all_objects))
-            else:
-                safe_dump(all_objects, of)
+        if args.export_split:
+            for obj in all_objects:
+                for wg in all_objects[obj]:
+                    if args.use_namespace:
+                        for ns in all_objects[obj][wg]:
+                            filename = f"{obj}.{wg}.{ns}.{args.export_file}"
+                            filename = f"{ns}.{args.export_file}"
+                            data = {
+                                "namespace": obj,
+                                "worker_group": wg,
+                                "object_type": ns,
+                                "data": all_objects[obj][wg][ns].copy()
+                            }
+                            dur = _create_dir(args.export_dir, wg, obj)
+                            _write_file(dur, filename, data)
+                    else:
+                        filename = f"{obj}.{wg}.{args.export_file}"
+                        filename = f"{wg}.{args.export_file}"
+                        data = {
+                            "worker_group": obj,
+                            "object_type": wg,
+                            "data": all_objects[obj][wg].copy()
+                        }
+                        dur = _create_dir(args.export_dir, obj)
+                        _write_file(dur, filename, data)
+        else:
+            for obj in all_objects:
+                dur = _create_dir(args.export_dir, obj)
+                _write_file(dur, args.export_file, all_objects[obj].copy())
         # self._display(exported_objects, colors.get("info", "green"))
         self._display("Export Complete", colors.get("success", "green"))
     except YAMLError as err:
@@ -100,6 +136,7 @@ parser.add_argument("--use-namespace", help="Export all config options with a na
 parser.add_argument("--keep-defaults", help="Export all config options that are default items", action='store_true')
 parser.add_argument("--export-dir", help="Export directory", default=export_cmd["directory"])
 parser.add_argument("--export-file", help="Export filename", default=export_cmd["file"])
+parser.add_argument("--export-split", help="Split knowledge objects by type", action='store_true')
 parser.add_argument("--tune-ids", help="Exclude or include ids from this file", default=tuning["file"])
 parser.add_argument("--objects",
                     help="Space separated list of knowledge objects to export",

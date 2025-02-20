@@ -115,7 +115,7 @@ class Packs(BaseKnowledge):
                         pack["routes"] = routes
                         pack["pipelines"] = pipelines
                         if save_pack:
-                            directory = os.path.join(self.args.export_dir, "packs")
+                            directory = self._gen_save_dir(self.args.export_dir, "packs")
                             self.save_pack(directory, pack)
                         packs.append(pack)
             return packs

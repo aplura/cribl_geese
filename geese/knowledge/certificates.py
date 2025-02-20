@@ -21,9 +21,7 @@ class Certificates(BaseKnowledge):
         data = self.get(self.endpoint)
         if data.status_code == 200 and data.json():
             items = []
-            output_directory = os.path.join(self.args.export_dir, "certificates")
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
+            output_directory = self._gen_save_dir(self.args.export_dir, "certificates")
             for item in data.json()["items"]:
                 filename = os.path.join(output_directory, f"{item['id']}.crt")
                 with open(filename, 'w') as of:
