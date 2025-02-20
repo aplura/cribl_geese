@@ -185,16 +185,28 @@ class Goose(object):
             self._display('\n\t'.join(msgs), colors["error"])
             sys.exit(ec.INVALID_COMMAND_PARAMETERS)
 
-    def get(self, knowledge=None):
+    def get(self, knowledge=None, restrict_sources=None):
         try:
+            valid_source = [s["namespace"] for s in self.sources]
+            if restrict_sources:
+                valid_source = f"{restrict_sources}".split(",")
+                self._display(f"Restricting Sources to: {', '.join(valid_source)}", colors.get("warning", "yellow"))
             if knowledge is None:
                 knowledge = []
-            return {s["namespace"]: self._get_source(knowledge, s) for s in self.sources}
+            self._logger.debug(f"action=get_knowledge valid_sources={','.join(valid_source)}")
+            ret_objs = {}
+            for s in self.sources:
+                if s["namespace"] not in valid_source:
+                    self._display(f"Ignoring Source: {s['namespace']}", colors.get("error", "red"))
+                else:
+                    ret_objs[s["namespace"]] = self._get_source(knowledge, s)
+            return ret_objs
         except Exception as e:
             self._display_error(f"Get Error: {knowledge}", e)
 
     def _get_source(self, knowledge, source):
         kos = {}
+        self._display(f"Gathering Knowledge Objects: {source.get('namespace')}", colors.get("info", "blue"))
         if "worker_groups" in source:
             for group in source["worker_groups"]:
                 kos[group] = {x: self._get(x, source, group=group) for x in knowledge if
