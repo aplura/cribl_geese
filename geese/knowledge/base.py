@@ -34,7 +34,6 @@ class BaseKnowledge:
                 self.colors = kwargs["colors"]
             if "tuning" in kwargs.keys():
                 self.tuning = kwargs["tuning"]
-            self.namespace = args["namespace"] if "namespace" in args else None
             self.group = leader["group"] if "group" in leader and len(leader["group"]) > 0 else None
             self.leader = leader
             self.endpoint = None

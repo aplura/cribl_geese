@@ -13,19 +13,19 @@ colors = {
 root_folder = "cribl"
 import_cmd = {
     "resolve_conflict": "update",
-    "directory": os.path.join(root_folder, "import"),
-    "file": "import_result.yaml"
+    "directory": os.path.join(root_folder),
+    "file": "objects.yaml"
 }
 export_cmd = {
-    "directory": os.path.join(root_folder, "export"),
-    "file": "export.yaml"
+    "directory": os.path.join(root_folder),
+    "file": "objects.yaml"
 }
 simulate_cmd = {
-    "directory": os.path.join(root_folder, "simulation"),
+    "directory": os.path.join(root_folder),
     "file": "simulate_results.yaml"
 }
 validate_cmd = {
-    "directory": os.path.join(root_folder, "validation"),
+    "directory": os.path.join(root_folder),
     "file": "validate_results.yaml"
 }
 tuning = {

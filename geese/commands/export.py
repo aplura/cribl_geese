@@ -42,7 +42,7 @@ def _export_leader(self, args):
             sys.exit(ec.ALL_IS_WELL)
         ko = knowledge_objects if args.all_objects else [a for a in args.objects if a in knowledge_objects and validate_knowledge(
             a, self.tuning_object)]
-        exported_objects = self.get(ko)
+        exported_objects = self.get(ko, args.namespace)
         self._display("Exporting Knowledge Objects", colors.get("info", "blue"))
         all_objects = {}
         for obj in exported_objects:
@@ -86,7 +86,6 @@ def _export_leader(self, args):
                 for wg in all_objects[obj]:
                     if args.use_namespace:
                         for ns in all_objects[obj][wg]:
-                            filename = f"{obj}.{wg}.{ns}.{args.export_file}"
                             filename = f"{ns}.{args.export_file}"
                             data = {
                                 "namespace": obj,
@@ -97,7 +96,6 @@ def _export_leader(self, args):
                             dur = _create_dir(args.export_dir, wg, obj)
                             _write_file(dur, filename, data)
                     else:
-                        filename = f"{obj}.{wg}.{args.export_file}"
                         filename = f"{wg}.{args.export_file}"
                         data = {
                             "worker_group": obj,
@@ -108,8 +106,15 @@ def _export_leader(self, args):
                         _write_file(dur, filename, data)
         else:
             for obj in all_objects:
+                data = {
+                    "data": all_objects[obj].copy()
+                }
+                if args.use_namespace:
+                    data["namespace"] = obj
+                else:
+                    data["worker_group"] = obj
                 dur = _create_dir(args.export_dir, obj)
-                _write_file(dur, args.export_file, all_objects[obj].copy())
+                _write_file(dur, args.export_file, data)
         # self._display(exported_objects, colors.get("info", "green"))
         self._display("Export Complete", colors.get("success", "green"))
     except YAMLError as err:
@@ -137,6 +142,7 @@ parser.add_argument("--keep-defaults", help="Export all config options that are 
 parser.add_argument("--export-dir", help="Export directory", default=export_cmd["directory"])
 parser.add_argument("--export-file", help="Export filename", default=export_cmd["file"])
 parser.add_argument("--export-split", help="Split knowledge objects by type", action='store_true')
+parser.add_argument("--namespace", help="Comma Separated list of namespaces to export")
 parser.add_argument("--tune-ids", help="Exclude or include ids from this file", default=tuning["file"])
 parser.add_argument("--objects",
                     help="Space separated list of knowledge objects to export",
