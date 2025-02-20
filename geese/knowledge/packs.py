@@ -201,7 +201,7 @@ class Packs(BaseKnowledge):
             shutil.move(f"{zip_file}.tar.gz", zip_file)
             shutil.rmtree(tmp_location)
             # Build a "pack file" (tar gz) with correct knowledge.
-            # For all non-pack files, upload via "kit" objects.
+            # For all non-pack files, upload via "ruck" objects.
             response = self._upload_and_install(item, local_location=zip_file)
             if response.status_code == 200:
                 self._display(f"\t{item['name']}: Pack Installed Successfully", self.colors.get("success", "green"))
@@ -210,32 +210,32 @@ class Packs(BaseKnowledge):
                 for kit_item in kit_valid_items:
                     if kit_item in pack:
                         if kit_item == "secrets":
-                            self._display(f"\tProcessing Kit: Secrets", self.colors.get("info", "blue"))
+                            self._display(f"\tProcessing ruck: Secrets", self.colors.get("info", "blue"))
                             s = Secrets(self.leader, group=self.group, args=self.args)
                             changes[kit_item] = []
                             for secret in pack[kit_item]:
                                 changes[kit_item].append(s.update(pack[kit_item][secret]))
                             statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: Kit Objects Installed Successfully",
+                                self._display(f"\t\t{kit_item}: ruck Objects Installed Successfully",
                                               self.colors.get("success", "green"))
                             else:
                                 self._display(f"\t\t{kit_item}: Failed to install all items.",
                                               self.colors.get("error", "red"))
                         if kit_item == "collectors":
-                            self._display(f"\tProcessing Kit: Collection Jobs", self.colors.get("info", "blue"))
+                            self._display(f"\tProcessing ruck: Collection Jobs", self.colors.get("info", "blue"))
                             s = CollectorJobs(self.leader, group=self.group, args=self.args)
                             changes[kit_item] = []
                             for job in pack[kit_item]:
                                 changes[kit_item].append(s.update(pack[kit_item][job]))
                             statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: Kit Objects Installed Successfully", self.colors.get("success", "green"))
+                                self._display(f"\t\t{kit_item}: ruck Objects Installed Successfully", self.colors.get("success", "green"))
                             else:
                                 self._display(f"\t\t{kit_item}: Failed to install all items.",
                                               self.colors.get("error", "red"))
                         if kit_item == "routes":
-                            self._display(f"\tProcessing Kit: Routes", self.colors.get("info", "blue"))
+                            self._display(f"\tProcessing ruck: Routes", self.colors.get("info", "blue"))
                             r = Routes(self.leader, group=self.group, args=self.args)
                             changes[kit_item] = []
                             pack_route = {
@@ -245,7 +245,7 @@ class Packs(BaseKnowledge):
                                 "enableOutputExpression": False,
                                 "filter": 'routes == "vmware"',
                                 "final": True,
-                                "id": 'kit-vmware_cbc-route',
+                                "id": 'ruck-vmware_cbc-route',
                                 "name":" VMWare CBC Route",
                                 "output": "default",
                                 "pipeline": f"pack:{pack_id}"
@@ -253,7 +253,7 @@ class Packs(BaseKnowledge):
                             changes[kit_item].append(r.add(pack_route))
                             statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: Kit Objects Installed Successfully",
+                                self._display(f"\t\t{kit_item}: Ruck Objects Installed Successfully",
                                               self.colors.get("success", "green"))
                             else:
                                 self._display(f"\t\t{kit_item}: Failed to install all items.",

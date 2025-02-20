@@ -22403,7 +22403,7 @@ components:
                 type: string
                 title: Content name
                 description: The name of the Wiz query
-                pattern: '^[a-zA-Z0-9_-\s]+$'
+                pattern: ^[a-zA-Z0-9_-\s]+$
               contentDescription:
                 type: string
                 title: Description
@@ -50207,7 +50207,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   "/system/teams/{id}/users":
     get:
       tags:
@@ -50244,7 +50244,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
     post:
       tags:
         - teams
@@ -50286,7 +50286,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   /system/users:
     get:
       tags:
@@ -50408,7 +50408,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
     delete:
       tags: *a31
       summary: Delete User
@@ -50457,7 +50457,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   /search/dashboard-categories:
     get:
       tags:
@@ -51734,7 +51734,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   "/lib/protobuf-libraries/{id}/encodings/{encid}":
     get:
       tags:
@@ -51771,13 +51771,13 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
         - name: encid
           in: path
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   /lib/protobuf-libraries/:
     get:
       tags:
@@ -51814,7 +51814,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   "/lib/protobuf-libraries/{id}/encodings":
     get:
       tags:
@@ -51851,7 +51851,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
   /lib/regex:
     get:
       tags:
@@ -52337,8 +52337,7 @@ paths:
       responses: *a100
       parameters:
         - &a103
-          schema:
-            type: string
+          type: string
           name: pack
           in: path
           required: true
@@ -53010,8 +53009,7 @@ paths:
       responses: *a119
       parameters:
         - &a122
-          schema:
-            type: string
+          type: string
           name: pack
           in: path
           required: true
@@ -53190,8 +53188,7 @@ paths:
       responses: *a129
       parameters:
         - &a132
-          schema:
-            type: string
+          type: string
           name: pack
           in: path
           required: true
@@ -53298,8 +53295,7 @@ paths:
       responses: *a135
       parameters:
         - &a138
-          schema:
-            type: string
+          type: string
           name: pack
           in: path
           required: true
@@ -53611,7 +53607,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
     put:
       tags:
         - edgeAppScopeProcesses
@@ -54077,12 +54073,10 @@ paths:
         - in: query
           description: Authorization Code
           name: code
-          schema:
-            type: string
+          type: string
         - in: query
           name: state
-          schema:
-            type: string
+          type: string
       responses:
         "200":
           description: Authorization success
@@ -54174,12 +54168,10 @@ paths:
         - in: query
           description: Logout request object
           name: SAMLResponse
-          schema:
-            type: string
+          type: string
         - in: query
           name: RelayState
-          schema:
-            type: string
+          type: string
       responses:
         "200":
           description: Logout success
@@ -54235,12 +54227,10 @@ paths:
         - in: query
           description: Authentication request object
           name: SAMLResponse
-          schema:
-            type: string
+          type: string
         - in: query
           name: RelayState
-          schema:
-            type: string
+          type: string
       responses:
         "200":
           description: Authentication success
@@ -54751,13 +54741,11 @@ paths:
         - name: group
           in: path
           required: true
-          schema:
-            type: string
+          type: string
         - name: version
           in: path
           required: true
-          schema:
-            type: string
+          type: string
       responses:
         "200":
           description: Get contents of a config bundle
@@ -57965,9 +57953,6 @@ paths:
           schema:
             type: string
           description: Group ID
-      responses:
-        "200":
-          description: a list of any objects
   /version/show:
     get:
       tags:
@@ -58090,9 +58075,6 @@ paths:
         - git
       summary: undo the last commit
       description: undo the last commit
-      responses:
-        "200":
-          description: a list of any objects
       deprecated: false
       parameters:
         - name: group
@@ -58680,8 +58662,7 @@ paths:
       responses: *a157
       parameters:
         - &a159
-          schema:
-            type: string
+          type: string
           name: pack
           in: path
           required: true
@@ -59421,7 +59402,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
         - name: type
           in: query
           required: false
@@ -59472,7 +59453,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "No Description"
+          description: null
         - name: type
           in: query
           required: false
