@@ -7,47 +7,20 @@ import argparse
 import sys
 from geese.constants.common_arguments import add_arguments
 from geese.constants.configs import colors, import_cmd, tuning, export_cmd, simulate_cmd
-from geese.utils.operations import validate, load_tuning, validate_knowledge
+from geese.utils.operations import validate, load_tuning, validate_knowledge, validate_args, load_configurations
 
 
 def _simulate(self, args):
     self._logger.debug("action=simulate_import")
     try:
         self._display("Simulating Simulation of Cribl Configurations", colors.get("info", "blue"))
-        if not args.import_file.endswith(".yaml") and args.import_file.endswith(".json"):
-            self._display(f"Simulation file: {args.import_file} is not a YAML or JSON file.", colors.get("error"))
-            sys.exit(ec.FILE_NOT_FOUND)
-        if args.save_file and not args.save_file.endswith(".yaml") and args.save_file.endswith(".json"):
-            self._display(f"Save file: {args.save_file} is not a YAML or JSON file.", colors.get("error"))
-            sys.exit(ec.FILE_NOT_FOUND)
-        tuning_object = {}
-        if args.tune_ids and not args.tune_ids.endswith(".yaml") and args.tune_ids.endswith(".json"):
-            self._display(f"Tuning file: {args.tune_ids} is not a YAML or JSON file.", colors.get("error"))
-            sys.exit(ec.FILE_NOT_FOUND)
-        elif args.tune_ids:
-            tuning_object = load_tuning(args.tune_ids)
-        self.tuning_object = tuning_object
-        knowledge_objects = list(self.objects.keys())
-        if args.list_objects:
-            self._display(f"Available objects: {', '.join(knowledge_objects)}", colors.get("info", "blue"))
-            sys.exit(ec.ALL_IS_WELL)
-        ko = knowledge_objects if args.all_objects else [a for a in args.objects if a in knowledge_objects and validate_knowledge(
-            a, self.tuning_object)]
-        if not os.path.exists(args.import_dir):
-            self._display(f"Export Directory does not exist: {args.import_dir}", colors.get("error", "red"))
-            sys.exit(ec.LOCATION_NOT_FOUND)
-        with open(os.path.join(args.import_dir, f"{args.import_file}"), "r") as of:
-            if args.import_file.endswith(".json"):
-                file_data = json.load(of)
-            else:
-                file_data = yaml.safe_load(of)
-            for worker_group in file_data:
-                all_objects = {k: v for k, v in file_data[worker_group].items() if k in ko}
+        ko = validate_args(self, args)
+        all_objects = load_configurations(args, ko)
         filtered_objects = {}
         for record in all_objects:
             for check_object in all_objects[record]:
                 c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
-                if validate(record, c_object, tuning_object):
+                if validate(record, c_object, self.tuning_object):
                     if record not in filtered_objects:
                         filtered_objects[record] = []
                     if args.use_namespace and "id" in c_object:

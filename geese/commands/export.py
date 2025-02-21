@@ -4,7 +4,7 @@ from yaml import YAMLError, safe_dump
 import geese.constants.exit_codes as ec
 import argparse
 import sys
-from geese.utils.operations import load_tuning, validate_knowledge
+from geese.utils.operations import validate_args, validate_knowledge
 from geese.constants.common_arguments import add_arguments
 from geese.constants.configs import colors, export_cmd, tuning
 # Check for a "get diff" api call
@@ -26,22 +26,7 @@ def _export_leader(self, args):
     self._logger.debug("action=export_leader")
     try:
         self._display("Exporting Cribl Configurations", colors.get("info", "blue"))
-        if not args.export_file.endswith(".yaml") and not args.export_file.endswith(".json"):
-            self._display(f"Export file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
-            sys.exit(ec.FILE_NOT_FOUND)
-        tuning_object = {}
-        if args.tune_ids and not args.tune_ids.endswith(".yaml") and args.tune_ids.endswith(".json"):
-            self._display(f"Tuning file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
-            sys.exit(ec.FILE_NOT_FOUND)
-        elif args.tune_ids:
-            tuning_object = load_tuning(args.tune_ids)
-        self.tuning_object = tuning_object
-        knowledge_objects = list(self.objects.keys())
-        if args.list_objects:
-            self._display(f"Available objects: {', '.join(knowledge_objects)}", colors.get("info", "blue"))
-            sys.exit(ec.ALL_IS_WELL)
-        ko = knowledge_objects if args.all_objects else [a for a in args.objects if a in knowledge_objects and validate_knowledge(
-            a, self.tuning_object)]
+        ko = validate_args(self, args)
         exported_objects = self.get(ko, args.namespace)
         self._display("Exporting Knowledge Objects", colors.get("info", "blue"))
         all_objects = {}
