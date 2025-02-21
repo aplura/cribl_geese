@@ -46,7 +46,7 @@ selective_arguments = {
         },
         "--save-file": {
             "help": "Save the results of the import to this file",
-            "default": import_cmd["file"]
+            "default": import_cmd["save_file"]
         },
         "--save-dir": {
             "help": "Save the results of the validation to this directory",
@@ -95,7 +95,19 @@ selective_arguments = {
             "help": "Space separated list of knowledge objects to Simulate",
             "nargs": "+",
             "required": "--all-objects" not in sys.argv and "--list-objects" not in sys.argv
-        }
+        },
+        "--split": {
+            "help": "Flag to indicate objects were split",
+            "action": "store_true"
+        },
+         "--directory": {
+            "help": "Directory to find configurations.",
+            "default": export_cmd["directory"]
+        },
+        "--file": {
+            "help": "Filename to read from or write to.",
+            "default": export_cmd["file"]
+        },
     }
 }
 

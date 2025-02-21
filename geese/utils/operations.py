@@ -90,11 +90,18 @@ def validate_args(self, args):
 def load_configurations(self, args, ko):
     all_objects = {}
     base_dir = args.import_dir
-    files = glob.glob(os.path.join(base_dir, "*", "configs", f"{args.import_file}"))
+    recursive = True
+    if args.split:
+        glob_path = os.path.join(base_dir, "**", "configs", f"*{args.file}")
+    else:
+        glob_path = os.path.join(base_dir, "**", "configs", f"{args.import_file}")
+    files = glob.glob(glob_path, recursive=recursive)
+    self._dbg(action="load_configurations",
+              search=glob_path,
+              files=files)
     if len(files) == 0:
         self._display(f"No configuration files found in {base_dir} with name {args.import_file}", colors.get("error", "red"))
         sys.exit(ec.FILE_NOT_FOUND)
-    self._dbg(action="load_configurations", files=files)
     for conf_file in files:
         self._display(f"Loading configuration file: {conf_file}", colors.get("info", "blue"))
         with open(conf_file, "r") as of:
@@ -106,25 +113,58 @@ def load_configurations(self, args, ko):
                 self._display(f"Configuration File {conf_file} is not a YAML or JSON file.", colors.get("error", "red"))
                 continue
             if args.use_namespace:
-                root = file_data.get("namespace", "no_namespace")
-                all_objects[root] = {}
-                if "data" in file_data:
-                    for wg in file_data["data"]:
-                        all_objects[root][wg] = {k: v for k, v in file_data["data"][wg].items() if k in ko}
+                if args.split:
+                    root = file_data.get("namespace", "no_namespace")
+                    wg = file_data.get("group", "default")
+                    k = file_data.get("object_type", "no_object_type")
+                    if root not in all_objects:
+                        all_objects[root] = {}
+                    if wg not in all_objects[root]:
+                        all_objects[root][wg] = {}
+                    if "data" in file_data and k in ko :
+                        all_objects[root][wg][k] = file_data["data"]
                         self._dbg(action="load_configurations",
                                   use_namespace=args.use_namespace,
                                   namespace=root,
                                   group=wg,
-                                  keys=list(all_objects.get(root, {}).get(wg, {}).keys()))
+                                  object_type=k,
+                                  keys=list(all_objects.get(root, {}).get(wg, {}).get(k, {}).keys()))
+                else:
+                    root = file_data.get("namespace", "no_namespace")
+                    if root not in all_objects:
+                        all_objects[root] = {}
+                    if "data" in file_data:
+                        for wg in file_data["data"]:
+                            all_objects[root][wg] = {k: v for k, v in file_data["data"][wg].items() if k in ko}
+                            self._dbg(action="load_configurations",
+                                      use_namespace=args.use_namespace,
+                                      namespace=root,
+                                      group=wg,
+                                      keys=list(all_objects.get(root, {}).get(wg, {}).keys()))
             else:
-                root = file_data.get("worker_group", "default")
-                if "data" in file_data:
-                    all_objects[root] = {k: v for k, v in file_data["data"].items() if k in ko}
-                    self._dbg(action="load_configurations",
-                              use_namespace=args.use_namespace,
-                              group=root,
-                              keys=list(all_objects.get(root, {}).keys()))
+                if args.split:
+                    root = file_data.get("group", "default")
+                    k = file_data.get("object_type", "no_object_type")
+                    if root not in all_objects:
+                        all_objects[root] = {}
+                    if k not in all_objects[root]:
+                        all_objects[root][k] = {}
+                    if "data" in file_data and k in ko:
+                        all_objects[root][k] = file_data["data"]
+                        self._dbg(action="load_configurations",
+                                  use_namespace=args.use_namespace,
+                                  group=root,
+                                  object_type=k,
+                                  keys=list(all_objects.get(root, {}).get(k, {}).keys()))
+                else:
+                    root = file_data.get("group", "default")
+                    if "data" in file_data:
+                        all_objects[root] = {k: v for k, v in file_data["data"].items() if k in ko}
+                        self._dbg(action="load_configurations",
+                                  use_namespace=args.use_namespace,
+                                  group=root,
+                                  keys=list(all_objects.get(root, {}).keys()))
     self._dbg(action="load_configurations",
               use_namespace=args.use_namespace,
               all_objects_keys=list(all_objects.keys()))
-    return {}
+    return all_objects
