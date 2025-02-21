@@ -14,7 +14,8 @@ root_folder = "cribl"
 import_cmd = {
     "resolve_conflict": "update",
     "directory": os.path.join(root_folder),
-    "file": "objects.yaml"
+    "file": "objects.yaml",
+    "save_file": "results.yaml"
 }
 export_cmd = {
     "directory": os.path.join(root_folder),

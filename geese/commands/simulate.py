@@ -18,17 +18,24 @@ def _simulate(self, args):
         all_objects = load_configurations(self, args, ko)
         filtered_objects = {}
         for record in all_objects:
+            self._dbg(action="simulating_import", record=record)
             for check_object in all_objects[record]:
                 c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
+                self._dbg(action="simulate_import_validate",
+                          record=record,
+                          check_object=check_object,)
                 if validate(record, c_object, self.tuning_object):
                     if record not in filtered_objects:
                         filtered_objects[record] = []
                     if args.use_namespace and "id" in c_object:
                         c_object["id"] = check_object
                     filtered_objects[record].append(c_object)
+                else:
+                    self._dbg(action="simulate_import", record=record, check_object=check_object, status="failed_validation")
+        #  TODO: FAILS TO SIMULATE
         all_good, results = self.simulate(filtered_objects)
         if args.save:
-            with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
+            with open(os.path.join(args.directory, f"{args.save_file}"), "w") as of:
                 if args.save_file.endswith(".json"):
                     of.write(json.dumps(results))
                 else:
