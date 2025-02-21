@@ -1,8 +1,9 @@
 #!/bin/bash
 
-geese export --all-objects --export-dir cribl/tst
-geese export --all-objects --export-dir cribl/tst_ns --use-namespace
-geese export --all-objects --export-dir cribl/tst_ns_split --use-namespace --export-split
-geese export --all-objects --export-dir cribl/tst_split --export-split
+EX=" --all-objects --log-level DEBUG "
+geese export ${EX} --export-dir cribl/tst
+geese export ${EX} --export-dir cribl/tst_ns --use-namespace
+geese export ${EX} --export-dir cribl/tst_ns_split --use-namespace --export-split
+geese export ${EX} --export-dir cribl/tst_split --export-split
 
-geese simulate --all-objects --import-dir cribl/tst
+# geese simulate ${EX} --import-dir cribl/tst
