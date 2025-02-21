@@ -25,7 +25,6 @@ class SrchDatasets(BaseKnowledge):
                       source_url=self.url,
                       source_group=self.group,
                       count=len(items))
-            items["geese_is_fleet"] = self.is_fleet
             return items
         else:
             self._log("warn", action=action,

@@ -62,19 +62,19 @@ def load_tuning(file):
     return file_data
 
 def validate_args(self, args):
-    if args.import_dir:
-        if not args.import_file.endswith(".yaml") and args.import_file.endswith(".json"):
+    if "import_dir" in args:
+        if not args.import_file.endswith(".yaml") and not args.import_file.endswith(".json"):
             self._display(f"Import file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
             sys.exit(ec.FILE_NOT_FOUND)
         if not os.path.exists(args.import_dir):
             self._display(f"Import Directory does not exist: {args.import_dir}", colors.get("error", "red"))
             sys.exit(ec.LOCATION_NOT_FOUND)
-    if args.save_file and not args.save_file.endswith(".yaml") and args.save_file.endswith(".json"):
+    if "save_file" in args and not args.save_file.endswith(".yaml") and not args.save_file.endswith(".json"):
         self._display(f"Save file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
         sys.exit(ec.FILE_NOT_FOUND)
     tuning_object = {}
     if args.tune_ids:
-        if not args.tune_ids.endswith(".yaml") and args.tune_ids.endswith(".json"):
+        if not args.tune_ids.endswith(".yaml") and not args.tune_ids.endswith(".json"):
             self._display(f"Tuning file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
             sys.exit(ec.FILE_NOT_FOUND)
         tuning_object = load_tuning(args.tune_ids)

@@ -35,6 +35,7 @@ class BaseKnowledge:
             if "tuning" in kwargs.keys():
                 self.tuning = kwargs["tuning"]
             self.group = leader["group"] if "group" in leader and len(leader["group"]) > 0 else None
+            self.is_fleet = False
             self.leader = leader
             self.endpoint = None
             self.url = leader["url"]

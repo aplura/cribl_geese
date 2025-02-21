@@ -9,9 +9,10 @@ class Groups(BaseKnowledge):
     def __init__(self, leader, args=None, logger=None, group=None, fleet=None, product="stream", **kwargs):
         super().__init__(leader, args, logger, **kwargs)
         self.default_types = []
-        self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else "master/groups"
+        self.group = group if group else fleet if fleet else "default"
+        self.is_fleet = True if fleet is not None else False
+        self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else f"master/groups/{self.group}"
         self.api_path = f"/{self.endpoint}"
-        self.group = None
         self.supports_groups = False
 
     def export(self):
@@ -24,7 +25,6 @@ class Groups(BaseKnowledge):
                       source_url=self.url,
                       source_group=self.group,
                       count=len(items))
-            items["geese_is_fleet"] = self.is_fleet
             return items
         else:
             self._log("warn", action=action,
@@ -93,7 +93,6 @@ class Groups(BaseKnowledge):
                       source_url=self.url,
                       source_group=group,
                       count=len(items))
-            items["geese_is_fleet"] = self.is_fleet
             return items
         else:
             self._log("warn", action=action,
