@@ -50,27 +50,5 @@ parser = argparse.ArgumentParser(
     description='Import Cribl Configurations to a leader',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
-add_arguments(parser, ["global"])
-parser.add_argument("--all-objects",
-                    help="Just import everything",
-                    action='store_true',
-                    required='--objects' not in sys.argv and "--list-objects" not in sys.argv)
-parser.add_argument("--use-namespace", help="Import all config options with a namespace", action='store_true')
-parser.add_argument("--keep-defaults", help="Import all config options that are default items", action='store_true')
-parser.add_argument("--import-dir", help="Import directory", default=export_cmd["directory"])
-parser.add_argument("--import-file", help="Import filename", default=export_cmd["file"])
-parser.add_argument("--conflict-resolve", help="How to resolve conflicts",
-                    default=import_cmd["resolve_conflict"],
-                    choices=['update', 'ignore'])
-parser.add_argument("--save", help="Save the results of the import", action='store_true')
-parser.add_argument("--save-file", help="Save the results of the import to this file", default=import_cmd["file"])
-parser.add_argument("--commit-message", help="Commit message if set to commit")
-parser.add_argument("--commit", help="Commits changes after all objects are imported", action='store_true')
-parser.add_argument("--deploy", help="Deploys the commit version to the worker or fleets.", action='store_true')
-parser.add_argument("--tune-ids", help="Exclude or include ids from this file", default=tuning["file"])
-parser.add_argument("--objects",
-                    help="Space separated list of knowledge objects to import",
-                    nargs='+',
-                    required="--all-objects" not in sys.argv and "--list-objects" not in sys.argv)
-parser.add_argument("--list-objects", help="Show all objects available to import", action='store_true')
+add_arguments(parser, ["global", "import", "commit", "objects"])
 parser.set_defaults(handler=_import_configurations, cmd="import")
