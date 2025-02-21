@@ -74,7 +74,7 @@ def _export_leader(self, args):
                             filename = f"{ns}.{args.export_file}"
                             data = {
                                 "namespace": obj,
-                                "worker_group": wg,
+                                "group": wg,
                                 "object_type": ns,
                                 "data": all_objects[obj][wg][ns].copy()
                             }
@@ -83,7 +83,7 @@ def _export_leader(self, args):
                     else:
                         filename = f"{wg}.{args.export_file}"
                         data = {
-                            "worker_group": obj,
+                            "group": obj,
                             "object_type": wg,
                             "data": all_objects[obj][wg].copy()
                         }
@@ -97,7 +97,7 @@ def _export_leader(self, args):
                 if args.use_namespace:
                     data["namespace"] = obj
                 else:
-                    data["worker_group"] = obj
+                    data["group"] = obj
                 dur = _create_dir(args.export_dir, obj)
                 _write_file(dur, args.export_file, data)
         # self._display(exported_objects, colors.get("info", "green"))

@@ -19,7 +19,7 @@ def _validate(self, args):
     try:
         self._display("Validating Cribl Configurations against destination", colors.get("info", "blue"))
         ko = validate_args(self, args)
-        all_objects = load_configurations(args, ko)
+        all_objects = load_configurations(self, args, ko)
         filtered_objects = {}
         for record in all_objects:
             for check_object in all_objects[record]:

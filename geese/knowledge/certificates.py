@@ -13,6 +13,7 @@ class Certificates(BaseKnowledge):
         self.group = None
         if group is not None or fleet is not None:
             self.group = fleet if fleet is not None else group
+            self.is_fleet = True if fleet is not None else False
             self.endpoint = "system/certificates"
         self.certificates = {}
 
@@ -33,6 +34,7 @@ class Certificates(BaseKnowledge):
                       source_url=self.url,
                       source_group=self.group,
                       count=len(items))
+            items["geese_is_fleet"] = self.is_fleet
             return items
         else:
             self._log("warn", action=action,
