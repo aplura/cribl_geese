@@ -63,10 +63,8 @@ parser = argparse.ArgumentParser(
     description='Commit Cribl Configurations on a leader',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
-add_arguments(parser, ["global"])
-parser.add_argument("--commit-message", help="Commit message if set to commit", default="No commit message", required=False)
+add_arguments(parser, ["global", "commit"])
 parser.add_argument("--filter", help="Filter on group id", default=None)
-parser.add_argument("--deploy", help="Deploys the commit version to the worker or fleets.", action='store_true')
 parser.add_argument("--groups",
                     help="Space separated list of groups to commit",
                     nargs='*',
