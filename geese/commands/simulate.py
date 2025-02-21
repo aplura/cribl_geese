@@ -48,35 +48,5 @@ parser = argparse.ArgumentParser(
     description='Simulate importing Cribl Configurations to a leader',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
-add_arguments(parser, ["global"])
-parser.add_argument("--all-objects",
-                    help="Just import everything",
-                    action='store_true',
-                    required='--objects' not in sys.argv and "--list-objects" not in sys.argv)
-parser.add_argument("--use-namespace",
-                    help="Simulate all config options with a namespace",
-                    action='store_true')
-parser.add_argument("--keep-defaults",
-                    help="Keep the default types for each object",
-                    action='store_true')
-parser.add_argument("--import-dir",
-                    help="Where to import the configurations from for simulation:  directory",
-                    default=export_cmd["directory"])
-parser.add_argument("--import-file",
-                    help="Where to import the configurations from for simulation:  filename",
-                    default=export_cmd["file"])
-parser.add_argument("--conflict-resolve",
-                    help="How to resolve conflicts",
-                    default=import_cmd["resolve_conflict"],
-                    choices=['update', 'ignore'])
-parser.add_argument("--save", help="Save the results of the simulation", action='store_true')
-parser.add_argument("--save-file",
-                    help="Save the results of the simulation to this file",
-                    default=simulate_cmd["file"])
-parser.add_argument("--tune-ids", help="Exclude or include ids from this file", default=tuning["file"])
-parser.add_argument("--objects",
-                    help="Space separated list of knowledge objects to Simulate",
-                    nargs='+',
-                    required="--all-objects" not in sys.argv and "--list-objects" not in sys.argv)
-parser.add_argument("--list-objects", help="Show all objects available to Simulate", action='store_true')
+add_arguments(parser, ["global", "import", "objects"])
 parser.set_defaults(handler=_simulate, cmd="simulate")

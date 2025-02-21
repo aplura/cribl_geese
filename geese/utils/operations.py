@@ -105,7 +105,26 @@ def load_configurations(self, args, ko):
             else:
                 self._display(f"Configuration File {conf_file} is not a YAML or JSON file.", colors.get("error", "red"))
                 continue
-            wg = file_data.get("worker_group", "default")
-            if "data" in file_data:
-                all_objects[wg] = {k: v for k, v in file_data["data"].items() if k in ko}
+            if args.use_namespace:
+                root = file_data.get("namespace", "no_namespace")
+                all_objects[root] = {}
+                if "data" in file_data:
+                    for wg in file_data["data"]:
+                        all_objects[root][wg] = {k: v for k, v in file_data["data"][wg].items() if k in ko}
+                        self._dbg(action="load_configurations",
+                                  use_namespace=args.use_namespace,
+                                  namespace=root,
+                                  group=wg,
+                                  keys=list(all_objects.get(root, {}).get(wg, {}).keys()))
+            else:
+                root = file_data.get("worker_group", "default")
+                if "data" in file_data:
+                    all_objects[root] = {k: v for k, v in file_data["data"].items() if k in ko}
+                    self._dbg(action="load_configurations",
+                              use_namespace=args.use_namespace,
+                              group=root,
+                              keys=list(all_objects.get(root, {}).keys()))
+    self._dbg(action="load_configurations",
+              use_namespace=args.use_namespace,
+              all_objects_keys=list(all_objects.keys()))
     return {}

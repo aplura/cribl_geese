@@ -116,22 +116,8 @@ parser = argparse.ArgumentParser(
     description='Export Cribl Configurations from a leader',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
-add_arguments(parser, ["global"])
-# parser.add_argument("--simulate", help="Basically, a dry run", action='store_true')
-parser.add_argument("--all-objects",
-                    help="Just export everything",
-                    action='store_true',
-                    required='--objects' not in sys.argv and "--list-objects" not in sys.argv)
-parser.add_argument("--use-namespace", help="Export all config options with a namespace", action='store_true')
-parser.add_argument("--keep-defaults", help="Export all config options that are default items", action='store_true')
+add_arguments(parser, ["global", "objects"])
 parser.add_argument("--export-dir", help="Export directory", default=export_cmd["directory"])
 parser.add_argument("--export-file", help="Export filename", default=export_cmd["file"])
 parser.add_argument("--export-split", help="Split knowledge objects by type", action='store_true')
-parser.add_argument("--namespace", help="Comma Separated list of namespaces to export")
-parser.add_argument("--tune-ids", help="Exclude or include ids from this file", default=tuning["file"])
-parser.add_argument("--objects",
-                    help="Space separated list of knowledge objects to export",
-                    nargs='+',
-                    required="--all-objects" not in sys.argv and "--list-objects" not in sys.argv)
-parser.add_argument("--list-objects", help="Show all objects available to export", action='store_true')
 parser.set_defaults(handler=_export_leader, cmd="export")
