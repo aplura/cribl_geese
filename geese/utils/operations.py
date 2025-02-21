@@ -1,3 +1,4 @@
+import glob
 import json
 import sys
 import os
@@ -86,13 +87,25 @@ def validate_args(self, args):
                                                      a in knowledge_objects and validate_knowledge(
                                                          a, self.tuning_object)]
 
-def load_configurations(args, ko):
+def load_configurations(self, args, ko):
     all_objects = {}
-    with open(os.path.join(args.import_dir, f"{args.import_file}"), "r") as of:
-        if args.import_file.endswith(".json"):
-            file_data = json.load(of)
-        else:
-            file_data = yaml.safe_load(of)
-        for worker_group in file_data:
-            all_objects = {k: v for k, v in file_data[worker_group].items() if k in ko}
-    return all_objects
+    base_dir = args.import_dir
+    files = glob.glob(os.path.join(base_dir, "*", "configs", f"{args.import_file}"))
+    if len(files) == 0:
+        self._display(f"No configuration files found in {base_dir} with name {args.import_file}", colors.get("error", "red"))
+        sys.exit(ec.FILE_NOT_FOUND)
+    self._dbg(action="load_configurations", files=files)
+    for conf_file in files:
+        self._display(f"Loading configuration file: {conf_file}", colors.get("info", "blue"))
+        with open(conf_file, "r") as of:
+            if conf_file.endswith(".json"):
+                file_data = json.load(of)
+            elif conf_file.endswith(".yaml"):
+                file_data = yaml.safe_load(of)
+            else:
+                self._display(f"Configuration File {conf_file} is not a YAML or JSON file.", colors.get("error", "red"))
+                continue
+            wg = file_data.get("worker_group", "default")
+            if "data" in file_data:
+                all_objects[wg] = {k: v for k, v in file_data["data"].items() if k in ko}
+    return {}

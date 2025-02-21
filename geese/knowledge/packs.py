@@ -28,6 +28,7 @@ class Packs(BaseKnowledge):
             self.group = None
             if group is not None or fleet is not None:
                 self.group = fleet if fleet is not None else group
+            self.is_fleet = True if fleet is not None else False
                 self.endpoint = f"m/{self.group}/packs"
         except Exception as e:
             self._display_error("Unhandled INIT Exception", e)

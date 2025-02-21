@@ -15,7 +15,7 @@ def _simulate(self, args):
     try:
         self._display("Simulating Simulation of Cribl Configurations", colors.get("info", "blue"))
         ko = validate_args(self, args)
-        all_objects = load_configurations(args, ko)
+        all_objects = load_configurations(self, args, ko)
         filtered_objects = {}
         for record in all_objects:
             for check_object in all_objects[record]:

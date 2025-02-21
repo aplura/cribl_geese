@@ -16,7 +16,7 @@ def _import_configurations(self, args):
         self._display("Importing Cribl Configurations", colors.get("info", "blue"))
         # Validate args
         ko = validate_args(self, args)
-        all_objects = load_configurations(args, ko)
+        all_objects = load_configurations(self, args, ko)
         filtered_objects = {}
         for record in {k: v for k, v in all_objects.items() if k in ko}:
             for check_object in all_objects[record]:

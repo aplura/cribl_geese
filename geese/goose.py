@@ -461,3 +461,27 @@ class Goose(object):
         except Exception as e:
             self._display_error("Import Error", e)
             return False, {}
+
+    def _inform(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.info(st)
+
+    def _dbg(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.debug(st)
+
+    def _warn(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.warn(st)
+
+    def _fatal(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.fatal(st)
