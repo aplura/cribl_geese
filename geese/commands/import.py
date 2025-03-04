@@ -18,7 +18,7 @@ def _import_configurations(self, args):
         ko = validate_args(self, args)
         all_objects = load_configurations(self, args, ko)
         filtered_objects = filter_groups(self, all_objects)
-        self._display(f"Filtered Objects to validate", colors.get("info", "blue"))
+        self._display(f"Filtered Objects to Import, processing continues", colors.get("info", "blue"))
         if "version" in all_objects:
             filtered_objects["version"] = all_objects["version"]
         all_good, results = self.perform_import(filtered_objects)

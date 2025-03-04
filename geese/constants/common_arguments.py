@@ -27,14 +27,6 @@ global_arguments = {
 
 selective_arguments = {
     "import": {
-        "--import-dir": {
-            "help": "Import Directory",
-            "default": export_cmd["directory"]
-        },
-        "--import-file": {
-            "help": "Import filename",
-            "default": export_cmd["file"]
-        },
         "--conflict-resolve": {
             "help": "How to resolve conflicts",
             "default": import_cmd["resolve_conflict"],
