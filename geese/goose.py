@@ -308,42 +308,75 @@ class Goose(object):
 
     def validate(self, items):
         try:
-            if self.destination is None:
-                raise Exception("Destination Leader to validate against is not defined")
+            # Removed leader config, we don't care. We will use the API SPEC
             results = {}
             conflict_ids = {}
-            for func in [i for i in items if i in list(self.objects.keys())]:
-                self._display(
-                    f"Validating Import: '{func}' configurations",
-                    colors["info"])
-                if func not in results:
-                    results[func] = {"items": []}
+            if self._args.use_namespace:
+                for ns in items:
+                    self._display(f"Validating Namespace: {ns}", colors.get("info", "blue"))
+                    if ns not in list(results.keys()):
+                        self._dbg(action="validating_namespace",
+                                  groups=f"{list(items[ns].keys())}",)
+                        results[ns] = self._validate_group(items=items[ns], conflict_ids=conflict_ids)
+            else:
+                results = self._validate_group(items=items, conflict_ids=conflict_ids)
+            return True, {k: results[k] for k in results if len(results[k]) > 0}
+        except Exception as e:
+            self._display_error("Validate Error", e)
+            return False, {}
+
+    def _validate_group(self, items=None, conflict_ids=None):
+        results = {}
+        if items is None:
+            items = {}
+        if conflict_ids is None:
+            conflict_ids = {}
+        for group in items:
+            self._display(f"Validating Group: {group}", colors.get("info", "blue"))
+            if group not in results:
+                results[group] = {}
+            if group not in conflict_ids:
+                conflict_ids[group] = {}
+            for func in items[group]:
+                if len(items[group][func]) < 1:
+                    self._dbg(action="validating_group", result="continuing", length=len(items[group][func]), group=group)
+                    continue
+                self._dbg(action="validating_group", type=f"{func}", group=group)
+                if func in list(self.objects.keys()):
+                    self._display(
+                        f"\tValidating Import: '{func}' configurations",
+                        colors["info"])
+                else:
+                    self._display(
+                        f"\tNOT Validating Import: '{group}' configurations",
+                        colors["info"])
+                    continue
+                if func not in results[group]:
+                    results[group][func] = {"items": []}
                 if func not in conflict_ids:
-                    conflict_ids[func] = []
+                    conflict_ids[group][func] = []
                 func_ids = []
-                for individual in items[func]:
+                for individual in items[group][func]:
                     self._logger.debug(self._log_line(action="validating_object",
                                                       type=func,
+                                                      group=group,
                                                       individual=individual,
                                                       is_string=isinstance(individual, str)))
-                    individual_item = items[func][individual] if isinstance(individual, str) else individual
+                    individual_item = items[group][func][individual] if isinstance(individual, str) else individual
                     myID = individual_item["id"] if "id" in individual_item else "UnKnown ID Param"
-                    if myID in func_ids and myID not in conflict_ids[func]:
-                        conflict_ids[func].append(myID)
+                    if myID in func_ids and myID not in conflict_ids[group][func]:
+                        conflict_ids[group][func].append(myID)
                         if "conflicts" not in results[func]:
-                            results[func]["conflicts"] = []
-                        results[func]["conflicts"].append(myID)
+                            results[group][func]["conflicts"] = []
+                        results[group][func]["conflicts"].append(myID)
                     else:
                         func_ids.append(myID)
                     self._display(f"\tValidating: {myID}", colors["info"])
                     import_result = self._perform_operation(self.objects[func], "validate", self.destination,
                                                             item=individual_item)
-                    results[func]["items"].append(
+                    results[group][func]["items"].append(
                         import_result if import_result is not None else {"status": "error", "result": import_result})
-            return True, {k: results[k] for k in results if len(results[k]) > 0}
-        except Exception as e:
-            self._display_error("Validate Error", e)
-            return False, {}
+        return results
 
     def _load_prop_value(self, ref):
         loaded_spec = self.validate_spec

@@ -100,7 +100,7 @@ def load_configurations(self, args, ko):
               search=glob_path,
               files=files)
     if len(files) == 0:
-        self._display(f"No configuration files found in {base_dir} with name {args.import_file}", colors.get("error", "red"))
+        self._display(f"No configuration files found in {glob_path} with name {args.import_file}", colors.get("error", "red"))
         sys.exit(ec.FILE_NOT_FOUND)
     for conf_file in files:
         self._display(f"Loading configuration file: {conf_file}", colors.get("info", "blue"))
@@ -168,3 +168,31 @@ def load_configurations(self, args, ko):
               use_namespace=args.use_namespace,
               all_objects_keys=list(all_objects.keys()))
     return all_objects
+
+def _filter_groups(self, all_objects=None):
+    if all_objects is None:
+        all_objects = {}
+    filtered_objects = {}
+    for record in all_objects:
+        for check_object in all_objects[record]:
+            c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
+            if validate(record, c_object, self.tuning_object):
+                if record not in filtered_objects:
+                    filtered_objects[record] = {}
+                if check_object not in filtered_objects[record]:
+                    filtered_objects[record][check_object] = []
+                for objs in all_objects[record][check_object]:
+                    filtered_objects[record][check_object].append(all_objects[record][check_object][objs])
+    return filtered_objects
+
+def filter_groups(self, all_objects=None):
+    filtered_objects = {}
+    if self._args.use_namespace:
+        for ns in all_objects:
+            if ns not in list(filtered_objects.keys()):
+                self._dbg(action="filtering_namespace",
+                          groups=f"{list(all_objects[ns].keys())}", )
+                filtered_objects[ns] = _filter_groups(self, all_objects[ns])
+    else:
+        filtered_objects = _filter_groups(self, all_objects)
+    return filtered_objects

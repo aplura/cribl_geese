@@ -6,8 +6,8 @@ import geese.constants.exit_codes as ec
 import argparse
 import sys
 from geese.constants.common_arguments import add_arguments
-from geese.constants.configs import colors, import_cmd, export_cmd, tuning
-from geese.utils.operations import validate, validate_knowledge, validate_args, load_configurations
+from geese.constants.configs import colors
+from geese.utils.operations import validate_args, load_configurations, filter_groups
 
 
 def _import_configurations(self, args):
@@ -17,16 +17,8 @@ def _import_configurations(self, args):
         # Validate args
         ko = validate_args(self, args)
         all_objects = load_configurations(self, args, ko)
-        filtered_objects = {}
-        for record in {k: v for k, v in all_objects.items() if k in ko}:
-            for check_object in all_objects[record]:
-                c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
-                if validate(record, c_object, self.tuning_object):
-                    if record not in filtered_objects:
-                        filtered_objects[record] = []
-                    if args.use_namespace and "id" in c_object:
-                        c_object["id"] = check_object
-                    filtered_objects[record].append(c_object)
+        filtered_objects = filter_groups(self, all_objects)
+        self._display(f"Filtered Objects to validate", colors.get("info", "blue"))
         if "version" in all_objects:
             filtered_objects["version"] = all_objects["version"]
         all_good, results = self.perform_import(filtered_objects)
