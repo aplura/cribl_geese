@@ -7,7 +7,7 @@ from copy import deepcopy
 from deepdiff import DeepDiff
 from yaml import YAMLError, safe_dump
 
-from geese.knowledge import Secrets, CollectorJobs, Routes
+from geese.knowledge import Secrets, CollectorJobs, Routes, Inputs
 from geese.knowledge.base import BaseKnowledge
 from geese.utils import validate
 
@@ -29,7 +29,7 @@ class Packs(BaseKnowledge):
             if group is not None or fleet is not None:
                 self.group = fleet if fleet is not None else group
             self.is_fleet = True if fleet is not None else False
-            self.endpoint = f"m/{self.group}/packs"
+            self.endpoint = f"m/{self.group}/packs" if self.group else f"packs"
         except Exception as e:
             self._display_error("Unhandled INIT Exception", e)
 
@@ -179,12 +179,15 @@ class Packs(BaseKnowledge):
                     with open(os.path.join(pipeline_location, "route.yml"), "w") as f:
                         safe_dump(t[0], f)
                 if pack_item == "pipelines" and pack_item in pack:
+                    self._log("debug", action="upload_via_conf", pack_item=pack_item)
                     if not os.path.exists(pipeline_location):
                         os.makedirs(pipeline_location)
                     t = pack[pack_item]
                     for pipeline in t:
-                        conf = t[pipeline]["conf"]
-                        output_path = os.path.join(pipeline_location, pipeline)
+                        pipe_id = pipeline["id"]
+                        self._log("debug", action="upload_via_conf", pack_item=pack_item, pipeline=pipeline)
+                        conf = pipeline["conf"]
+                        output_path = os.path.join(pipeline_location, pipe_id)
                         if not os.path.exists(output_path):
                             os.makedirs(output_path)
                         output_file = os.path.join(output_path, "conf.yml")
@@ -206,7 +209,7 @@ class Packs(BaseKnowledge):
             response = self._upload_and_install(item, local_location=zip_file)
             if response.status_code == 200:
                 self._display(f"\t{item['name']}: Pack Installed Successfully", self.colors.get("success", "green"))
-                kit_valid_items = ["secrets", "collectors", "inputs", "routes"]
+                kit_valid_items = ["secrets", "collectors", "inputs", "routes", "destinations"]
                 changes = {}
                 for kit_item in kit_valid_items:
                     if kit_item in pack:
@@ -218,22 +221,47 @@ class Packs(BaseKnowledge):
                                 changes[kit_item].append(s.update(pack[kit_item][secret]))
                             statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: ruck Objects Installed Successfully",
+                                self._display(f"\t\t{kit_item}: Ruck Secrets Installed Successfully",
                                               self.colors.get("success", "green"))
                             else:
-                                self._display(f"\t\t{kit_item}: Failed to install all items.",
+                                self._display(f"\t\t{kit_item}: Failed to install Ruck Secrets.",
+                                              self.colors.get("error", "red"))
+                        if kit_item == "inputs":
+                            self._display(f"\tProcessing ruck: Inputs", self.colors.get("info", "blue"))
+                            s = Inputs(self.leader, group=self.group, args=self.args)
+                            changes[kit_item] = []
+                            for itp in pack[kit_item]:
+                                if "metadata" in itp:
+                                    itp["metadata"].append(
+                                        {"name": "__pipeline_routing", "value": f"'{pack_id}'"})
+                                else:
+                                    itp["metadata"] = [{"name": "__pipeline_routing", "value": f"'{pack_id}'"}]
+                                changes[kit_item].append(s.update(itp))
+                            statuses = [True if x["updated"]["status"] == "success" else False for x in
+                                        changes[kit_item]]
+                            if all(statuses):
+                                self._display(f"\t\t{kit_item}: Ruck Inputs Installed Successfully",
+                                              self.colors.get("success", "green"))
+                            else:
+                                self._display(f"\t\t{kit_item}: Failed to install Ruck Inputs.",
                                               self.colors.get("error", "red"))
                         if kit_item == "collectors":
                             self._display(f"\tProcessing ruck: Collection Jobs", self.colors.get("info", "blue"))
                             s = CollectorJobs(self.leader, group=self.group, args=self.args)
                             changes[kit_item] = []
                             for job in pack[kit_item]:
-                                changes[kit_item].append(s.update(pack[kit_item][job]))
+                                ki = pack[kit_item][job]
+                                if "input" in ki:
+                                    if "metadata" in ki["input"]:
+                                        ki["input"]["metadata"].append({"name": "__pipeline_routing", "value": f"'{pack_id}'"})
+                                else:
+                                    ki["input"] = {"metadata": [{"name": "__pipeline_routing", "value": f"'{pack_id}'"}]}
+                                changes[kit_item].append(s.update(ki))
                             statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: ruck Objects Installed Successfully", self.colors.get("success", "green"))
+                                self._display(f"\t\t{kit_item}: Ruck CollectorJobs Installed Successfully", self.colors.get("success", "green"))
                             else:
-                                self._display(f"\t\t{kit_item}: Failed to install all items.",
+                                self._display(f"\t\t{kit_item}: Failed to install Ruck CollectorJobs.",
                                               self.colors.get("error", "red"))
                         if kit_item == "routes":
                             self._display(f"\tProcessing ruck: Routes", self.colors.get("info", "blue"))
@@ -241,23 +269,23 @@ class Packs(BaseKnowledge):
                             changes[kit_item] = []
                             pack_route = {
                                 "clones": [],
-                                "description": "Routes VMWare Data to VMWare Pipelines",
+                                "description": "Routes Data to Pipelines",
                                 "disabled": False,
                                 "enableOutputExpression": False,
-                                "filter": 'routes == "vmware"',
+                                "filter": f'__pipeline_routing === "{pack_id}"',
                                 "final": True,
-                                "id": 'ruck-vmware_cbc-route',
-                                "name":" VMWare CBC Route",
+                                "id": f'{pack_id}-ruck-route',
+                                "name":" Ruck Route",
                                 "output": "default",
                                 "pipeline": f"pack:{pack_id}"
                             }
                             changes[kit_item].append(r.add(pack_route))
                             statuses = [True if x["updated"]["status"] == "success" else False for x in changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: Ruck Objects Installed Successfully",
+                                self._display(f"\t\t{kit_item}: Ruck Routes Installed Successfully",
                                               self.colors.get("success", "green"))
                             else:
-                                self._display(f"\t\t{kit_item}: Failed to install all items.",
+                                self._display(f"\t\t{kit_item}: Failed to install Ruck Routes.",
                                               self.colors.get("error", "red"))
             else:
                 self._display(f"\t{item['id']}: Failed to install pack.",self.colors.get("error", "red"))

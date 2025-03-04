@@ -21,7 +21,14 @@ def _import_configurations(self, args):
         self._display(f"Filtered Objects to Import, processing continues", colors.get("info", "blue"))
         if "version" in all_objects:
             filtered_objects["version"] = all_objects["version"]
-        all_good, results = self.perform_import(filtered_objects)
+        results = {}
+        if args.use_namespace:
+            self._display(f"Namespace Importing Not Implemented", colors.get("warning", "yellow"))
+            sys.exit(ec.ALL_IS_WELL)
+        else:
+            self._display(f"Importing Configs to {self.destination['url']}", colors.get("info", "blue"))
+            for grp in filtered_objects:
+                all_good, results[grp] = self.perform_import(filtered_objects[grp])
         if args.save:
             with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
                 if args.save_file.endswith(".json"):
