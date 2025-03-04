@@ -432,9 +432,11 @@ class Goose(object):
                 raise Exception("Destination Leader to import is not defined")
             destination_groups_only = ["routes", "outputs", "inputs", "pipelines"]
             results = {}
+            self._dbg(action="importing_items", item_keys=list(items.keys()), destination=self.destination)
+
             for func in [i for i in items if i in list(self.objects.keys())]:
                 self._display(
-                    f"Copying {func} configurations: {len(items[func])}",
+                    f"Importing {func} configurations: {len(items[func])}",
                     colors["info"])
                 if func not in results:
                     results[func] = []
