@@ -89,12 +89,12 @@ def validate_args(self, args):
 
 def load_configurations(self, args, ko):
     all_objects = {}
-    base_dir = args.import_dir
+    base_dir = args.directory
     recursive = True
     if args.split:
         glob_path = os.path.join(base_dir, "**", "configs", f"*{args.file}")
     else:
-        glob_path = os.path.join(base_dir, "**", "configs", f"{args.import_file}")
+        glob_path = os.path.join(base_dir, "**", "configs", f"{args.file}")
     files = glob.glob(glob_path, recursive=recursive)
     self._dbg(action="load_configurations",
               search=glob_path,
