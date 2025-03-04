@@ -137,6 +137,7 @@ class BaseKnowledge:
             spec = self._load_spec(spec_name=api_path)
             if spec:
                 try:
+                    self._log("debug", action="checking_spec", type=api_path, item=item, spec_keys=spec["oneOf"][0]["properties"])
                     self.openapi(item, spec)
                     self._display(f"\t\t{api_path}: valid", self.colors.get("success", "green"))
                     errors["result"] = "success"

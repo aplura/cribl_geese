@@ -1,13 +1,13 @@
 import json
 import os
-import yaml
 from yaml import YAMLError, safe_dump
 import geese.constants.exit_codes as ec
 import argparse
 import sys
 from geese.constants.common_arguments import add_arguments
-from geese.constants.configs import colors, import_cmd, tuning, export_cmd, simulate_cmd
-from geese.utils.operations import validate, load_tuning, validate_knowledge, validate_args, load_configurations
+from geese.constants.configs import colors
+from geese.utils.operations import validate_args, load_configurations, \
+    filter_groups
 
 
 def _simulate(self, args):
@@ -16,22 +16,8 @@ def _simulate(self, args):
         self._display("Simulating Simulation of Cribl Configurations", colors.get("info", "blue"))
         ko = validate_args(self, args)
         all_objects = load_configurations(self, args, ko)
-        filtered_objects = {}
-        for record in all_objects:
-            self._dbg(action="simulating_import", record=record)
-            for check_object in all_objects[record]:
-                c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
-                self._dbg(action="simulate_import_validate",
-                          record=record,
-                          check_object=check_object,)
-                if validate(record, c_object, self.tuning_object):
-                    if record not in filtered_objects:
-                        filtered_objects[record] = []
-                    if args.use_namespace and "id" in c_object:
-                        c_object["id"] = check_object
-                    filtered_objects[record].append(c_object)
-                else:
-                    self._dbg(action="simulate_import", record=record, check_object=check_object, status="failed_validation")
+        filtered_objects = filter_groups(self, all_objects)
+        self._display(f"Filtered Objects to validate", colors.get("info", "blue"))
         #  TODO: FAILS TO SIMULATE
         all_good, results = self.simulate(filtered_objects)
         if args.save:

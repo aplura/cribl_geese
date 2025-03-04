@@ -9,9 +9,10 @@ import geese.constants.exit_codes as ec
 import argparse
 import sys
 from geese.constants.common_arguments import add_arguments
-from geese.constants.configs import colors, tuning, export_cmd, validate_cmd
+from geese.constants.configs import colors
 from geese.constants.api_specs import api_specs
-from geese.utils.operations import validate, load_tuning, validate_knowledge, validate_args, load_configurations
+from geese.utils.operations import  validate_args, load_configurations, \
+    filter_groups
 
 
 def _validate(self, args):
@@ -20,16 +21,8 @@ def _validate(self, args):
         self._display("Validating Cribl Configurations against destination", colors.get("info", "blue"))
         ko = validate_args(self, args)
         all_objects = load_configurations(self, args, ko)
-        filtered_objects = {}
-        for record in all_objects:
-            for check_object in all_objects[record]:
-                c_object = all_objects[record][check_object] if isinstance(check_object, str) else check_object
-                if validate(record, c_object, self.tuning_object):
-                    if record not in filtered_objects:
-                        filtered_objects[record] = []
-                    if args.use_namespace and "id" in c_object:
-                        c_object["id"] = check_object
-                    filtered_objects[record].append(c_object)
+        filtered_objects = filter_groups(self, all_objects)
+        self._display(f"Filtered Objects to validate", colors.get("info", "blue"))
         api_spec = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 "..",
                                 "constants",
@@ -41,6 +34,7 @@ def _validate(self, args):
             self.load_spec(spec)
             self.spec_file = api_spec
         self._display(f"Loading Spec {args.api_version}: Complete", colors.get("info", "blue"))
+        self._display(f"Validating Cribl Working Group Configs: {', '.join(list(filtered_objects.keys()))}", colors.get("info", "blue"))
         all_good, results = self.validate(filtered_objects)
         if args.save:
             with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
