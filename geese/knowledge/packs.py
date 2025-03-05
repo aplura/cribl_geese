@@ -7,7 +7,7 @@ from copy import deepcopy
 from deepdiff import DeepDiff
 from yaml import YAMLError, safe_dump
 
-from geese.knowledge import Secrets, CollectorJobs, Routes, Inputs
+from geese.knowledge import Secrets, CollectorJobs, Routes, Inputs, Outputs
 from geese.knowledge.base import BaseKnowledge
 from geese.utils import validate
 
@@ -116,7 +116,7 @@ class Packs(BaseKnowledge):
                         pack["routes"] = routes
                         pack["pipelines"] = pipelines
                         if save_pack:
-                            directory = self._gen_save_dir(self.args.export_dir, "packs")
+                            directory = self._gen_save_dir(self.args.directory, "packs")
                             self.save_pack(directory, pack)
                         packs.append(pack)
             return packs
@@ -162,7 +162,7 @@ class Packs(BaseKnowledge):
             pack_id = item['name']
             file_name = f"{pack_id}.crbl"
             zip_file = os.path.join(file_location, file_name)
-            tmp_location = os.path.join(file_location, uuid.uuid4().hex)
+            tmp_location = os.path.join(file_location, f"{pack_id}")
             default_location = os.path.join(tmp_location, "default")
             data_location = os.path.join(tmp_location, "data")
             pipeline_location = os.path.join(default_location, "pipelines")
@@ -203,7 +203,8 @@ class Packs(BaseKnowledge):
                         safe_dump({"logo": f"data:image/png;base64,{pack['logo']}"}, f)
             shutil.make_archive(zip_file, 'gztar', tmp_location)
             shutil.move(f"{zip_file}.tar.gz", zip_file)
-            shutil.rmtree(tmp_location)
+            if not self.args.no_delete_pack:
+                shutil.rmtree(tmp_location)
             # Build a "pack file" (tar gz) with correct knowledge.
             # For all non-pack files, upload via "ruck" objects.
             response = self._upload_and_install(item, local_location=zip_file)
@@ -226,8 +227,22 @@ class Packs(BaseKnowledge):
                             else:
                                 self._display(f"\t\t{kit_item}: Failed to install Ruck Secrets.",
                                               self.colors.get("error", "red"))
+                        if kit_item == "destinations":
+                            self._display(f"\tProcessing ruck: Destinations", self.colors.get("info", "blue"))
+                            s = Outputs(self.leader, group=self.group, args=self.args)
+                            changes[kit_item] = []
+                            for destination in pack[kit_item]:
+                                changes[kit_item].append(s.update(destination))
+                            statuses = [True if x["updated"]["status"] == "success" else False for x in
+                                        changes[kit_item]]
+                            if all(statuses):
+                                self._display(f"\t\t{kit_item}: Ruck Destinations Installed Successfully",
+                                              self.colors.get("success", "green"))
+                            else:
+                                self._display(f"\t\t{kit_item}: Failed to install Ruck Destinations.",
+                                              self.colors.get("error", "red"))
                         if kit_item == "inputs":
-                            self._display(f"\tProcessing ruck: Inputs", self.colors.get("info", "blue"))
+                            self._display(f"\tProcessing ruck: Sources", self.colors.get("info", "blue"))
                             s = Inputs(self.leader, group=self.group, args=self.args)
                             changes[kit_item] = []
                             for itp in pack[kit_item]:
@@ -240,10 +255,10 @@ class Packs(BaseKnowledge):
                             statuses = [True if x["updated"]["status"] == "success" else False for x in
                                         changes[kit_item]]
                             if all(statuses):
-                                self._display(f"\t\t{kit_item}: Ruck Inputs Installed Successfully",
+                                self._display(f"\t\t{kit_item}: Ruck Sources Installed Successfully",
                                               self.colors.get("success", "green"))
                             else:
-                                self._display(f"\t\t{kit_item}: Failed to install Ruck Inputs.",
+                                self._display(f"\t\t{kit_item}: Failed to install Ruck Sources.",
                                               self.colors.get("error", "red"))
                         if kit_item == "collectors":
                             self._display(f"\tProcessing ruck: Collection Jobs", self.colors.get("info", "blue"))

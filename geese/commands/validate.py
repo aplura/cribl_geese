@@ -19,7 +19,7 @@ def _validate(self, args):
     self._logger.debug("action=validate_import")
     try:
         self._display("Validating Cribl Configurations against destination", colors.get("info", "blue"))
-        ko = validate_args(self, args)
+        ko = validate_args(self, args, cmd="validate")
         all_objects = load_configurations(self, args, ko)
         filtered_objects = filter_groups(self, all_objects)
         self._display(f"Filtered Objects to validate", colors.get("info", "blue"))
@@ -37,7 +37,7 @@ def _validate(self, args):
         self._display(f"Validating Cribl Working Group Configs: {', '.join(list(filtered_objects.keys()))}", colors.get("info", "blue"))
         all_good, results = self.validate(filtered_objects)
         if args.save:
-            with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
+            with open(os.path.join(args.directory, f"{args.save_file}"), "w") as of:
                 if args.save_file.endswith(".json"):
                     of.write(json.dumps(results))
                 else:

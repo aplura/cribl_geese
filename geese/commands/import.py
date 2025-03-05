@@ -15,7 +15,7 @@ def _import_configurations(self, args):
     try:
         self._display("Importing Cribl Configurations", colors.get("info", "blue"))
         # Validate args
-        ko = validate_args(self, args)
+        ko = validate_args(self, args, cmd="import")
         all_objects = load_configurations(self, args, ko)
         filtered_objects = filter_groups(self, all_objects)
         self._display(f"Filtered Objects to Import, processing continues", colors.get("info", "blue"))
@@ -30,7 +30,7 @@ def _import_configurations(self, args):
             for grp in filtered_objects:
                 all_good, results[grp] = self.perform_import(filtered_objects[grp])
         if args.save:
-            with open(os.path.join(args.import_dir, f"{args.save_file}"), "w") as of:
+            with open(os.path.join(args.directory, f"{args.save_file}"), "w") as of:
                 if args.save_file.endswith(".json"):
                     of.write(json.dumps(results))
                 else:
@@ -50,4 +50,5 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 add_arguments(parser, ["global", "import", "commit", "objects"])
+parser.add_argument( "--no-delete-pack", help="Do not delete the temporary pack", action="store_true")
 parser.set_defaults(handler=_import_configurations, cmd="import")
