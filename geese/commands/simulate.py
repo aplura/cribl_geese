@@ -14,7 +14,7 @@ def _simulate(self, args):
     self._logger.debug("action=simulate_import")
     try:
         self._display("Simulating Simulation of Cribl Configurations", colors.get("info", "blue"))
-        ko = validate_args(self, args)
+        ko = validate_args(self, args, cmd="simulate")
         all_objects = load_configurations(self, args, ko)
         filtered_objects = filter_groups(self, all_objects)
         self._display(f"Filtered Objects to validate", colors.get("info", "blue"))

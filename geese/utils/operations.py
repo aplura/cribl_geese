@@ -61,21 +61,21 @@ def load_tuning(file):
             file_data = yaml.safe_load(of)
     return file_data
 
-def validate_args(self, args):
-    if "import_dir" in args:
-        if not args.import_file.endswith(".yaml") and not args.import_file.endswith(".json"):
-            self._display(f"Import file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
+def validate_args(self, args, cmd=None):
+    if "directory" in args and cmd in ["import", "validate", "simulate"]:
+        if not args.file.endswith(".yaml") and not args.file.endswith(".json"):
+            self._display(f"Import file: {args.file} is not a YAML or JSON file.", colors.get("error"))
             sys.exit(ec.FILE_NOT_FOUND)
-        if not os.path.exists(args.import_dir):
-            self._display(f"Import Directory does not exist: {args.import_dir}", colors.get("error", "red"))
+        if not os.path.exists(args.directory):
+            self._display(f"Directory does not exist: {args.directory}", colors.get("error", "red"))
             sys.exit(ec.LOCATION_NOT_FOUND)
     if "save_file" in args and not args.save_file.endswith(".yaml") and not args.save_file.endswith(".json"):
-        self._display(f"Save file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
+        self._display(f"Save file: {args.file} is not a YAML or JSON file.", colors.get("error"))
         sys.exit(ec.FILE_NOT_FOUND)
     tuning_object = {}
     if args.tune_ids:
         if not args.tune_ids.endswith(".yaml") and not args.tune_ids.endswith(".json"):
-            self._display(f"Tuning file: {args.export_file} is not a YAML or JSON file.", colors.get("error"))
+            self._display(f"Tuning file: {args.file} is not a YAML or JSON file.", colors.get("error"))
             sys.exit(ec.FILE_NOT_FOUND)
         tuning_object = load_tuning(args.tune_ids)
     self.tuning_object = tuning_object
@@ -83,6 +83,7 @@ def validate_args(self, args):
     if args.list_objects:
         self._display(f"Available objects: {', '.join(knowledge_objects)}", colors.get("info", "blue"))
         sys.exit(ec.ALL_IS_WELL)
+    self._dbg(action="validating_args", available_objects=knowledge_objects, all_objects=args.all_objects, objects=args.objects)
     return knowledge_objects if args.all_objects else [a for a in args.objects if
                                                      a in knowledge_objects and validate_knowledge(
                                                          a, self.tuning_object)]
@@ -100,7 +101,7 @@ def load_configurations(self, args, ko):
               search=glob_path,
               files=files)
     if len(files) == 0:
-        self._display(f"No configuration files found in {glob_path} with name {args.import_file}", colors.get("error", "red"))
+        self._display(f"No configuration files found in {glob_path} with name {args.file}", colors.get("error", "red"))
         sys.exit(ec.FILE_NOT_FOUND)
     for conf_file in files:
         self._display(f"Loading configuration file: {conf_file}", colors.get("info", "blue"))

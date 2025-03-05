@@ -50,8 +50,8 @@ class Lookups(BaseKnowledge):
                         if self.args.use_namespace:
                             filename = f"{lookup['id']}"
                         self._display(f"\tDownloading Lookup: {filename}", self.colors.get("info", "blue"))
-                        # if self.args.export_split and self.args.use_namespace:
-                        lookup_directory = self._gen_save_dir(self.args.export_dir, "lookups")
+                        # if self.args.split and self.args.use_namespace:
+                        lookup_directory = self._gen_save_dir(self.args.directory, "lookups")
                         response = self.save_lookup_content(lookup['id'], filename, f"{lookup_directory}")
                         if response.status_code == 200:
                             self._display(f"\t{lookup['id']}: File downloaded.", self.colors.get("success", "green"))

@@ -27,6 +27,7 @@ def _export_leader(self, args):
     try:
         self._display("Exporting Cribl Configurations", colors.get("info", "blue"))
         ko = validate_args(self, args)
+        self._dbg(action="exporting_objects", objects=ko)
         exported_objects = self.get(ko, args.namespace)
         self._display("Exporting Knowledge Objects", colors.get("info", "blue"))
         all_objects = {}
@@ -64,33 +65,34 @@ def _export_leader(self, args):
                                     if k not in c_obj[oop]:
                                         c_obj[oop][k] = []
                                     c_obj[oop][k].append(item)
-        if not os.path.exists(args.export_dir):
-            os.makedirs(args.export_dir)
-        if args.export_split:
+        if not os.path.exists(args.directory):
+            os.makedirs(args.directory)
+        if args.split:
             for obj in all_objects:
                 for wg in all_objects[obj]:
                     if args.use_namespace:
                         for ns in all_objects[obj][wg]:
-                            filename = f"{ns}.{args.export_file}"
+                            filename = f"{ns}.{args.file}"
                             data = {
                                 "namespace": obj,
                                 "group": wg,
                                 "object_type": ns,
                                 "data": all_objects[obj][wg][ns].copy()
                             }
-                            dur = _create_dir(args.export_dir, wg, obj)
+                            dur = _create_dir(args.directory, wg, obj)
                             _write_file(dur, filename, data)
                     else:
-                        filename = f"{wg}.{args.export_file}"
+                        filename = f"{wg}.{args.file}"
                         data = {
                             "group": obj,
                             "object_type": wg,
                             "data": all_objects[obj][wg].copy()
                         }
-                        dur = _create_dir(args.export_dir, obj)
+                        dur = _create_dir(args.directory, obj)
                         _write_file(dur, filename, data)
         else:
             for obj in all_objects:
+                print(f"Working on {obj}")
                 data = {
                     "data": all_objects[obj].copy()
                 }
@@ -98,8 +100,9 @@ def _export_leader(self, args):
                     data["namespace"] = obj
                 else:
                     data["group"] = obj
-                dur = _create_dir(args.export_dir, obj)
-                _write_file(dur, args.export_file, data)
+                dur = _create_dir(args.directory, obj)
+                self._display(f"Writing Exported File {args.file}", colors.get("info", "blue"))
+                _write_file(dur, args.file, data)
         # self._display(exported_objects, colors.get("info", "green"))
         self._display("Export Complete", colors.get("success", "green"))
     except YAMLError as err:
@@ -117,7 +120,4 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 add_arguments(parser, ["global", "objects"])
-parser.add_argument("--export-dir", help="Export directory", default=export_cmd["directory"])
-parser.add_argument("--export-file", help="Export filename", default=export_cmd["file"])
-parser.add_argument("--export-split", help="Split knowledge objects by type", action='store_true')
 parser.set_defaults(handler=_export_leader, cmd="export")

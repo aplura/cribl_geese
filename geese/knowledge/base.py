@@ -52,6 +52,11 @@ class BaseKnowledge:
     def to_json(self):
         return dict(self)
 
+    def change_group(self, group=None):
+        if group is not None:
+            self.group = group
+        return self.group
+
     def __iter__(self):
         for attr, value in self.__dict__.items():
             if not attr.startswith("_") and not callable(value):
