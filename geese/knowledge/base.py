@@ -23,6 +23,7 @@ class BaseKnowledge:
             self.supports_groups = True
             self.openapi = None
             self.log = logger
+            self._is_free = leader.get("is_free", False)
             if "display" in kwargs.keys():
                 self._display = kwargs["display"]
             if "validate_spec" in kwargs:

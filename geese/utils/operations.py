@@ -124,6 +124,7 @@ def load_configurations(self, args, ko):
                         all_objects[root][wg] = {}
                     if "data" in file_data and k in ko :
                         all_objects[root][wg][k] = file_data["data"]
+                        all_objects[root][wg][k]["worker_groups"] = [wg]
                         self._dbg(action="load_configurations",
                                   use_namespace=args.use_namespace,
                                   namespace=root,
@@ -137,6 +138,8 @@ def load_configurations(self, args, ko):
                     if "data" in file_data:
                         for wg in file_data["data"]:
                             all_objects[root][wg] = {k: v for k, v in file_data["data"][wg].items() if k in ko}
+                            for l in all_objects[root][wg]:
+                                all_objects[root][wg][l]["worker_groups"] = [wg]
                             self._dbg(action="load_configurations",
                                       use_namespace=args.use_namespace,
                                       namespace=root,
@@ -152,6 +155,8 @@ def load_configurations(self, args, ko):
                         all_objects[root][k] = {}
                     if "data" in file_data and k in ko:
                         all_objects[root][k] = file_data["data"]
+                        for iid in all_objects[root][k]:
+                            all_objects[root][k][iid]["worker_groups"] = [root]
                         self._dbg(action="load_configurations",
                                   use_namespace=args.use_namespace,
                                   group=root,

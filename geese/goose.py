@@ -232,6 +232,7 @@ class Goose(object):
             conf_obj = cls(leader, self._args, self._logger, group=group, fleet=fleet,
                            display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
             obj_type = conf_obj.get_ot()
+            self._display(f"\t\tPerforming Operation: '{operation}' on '{obj_type}'", colors.get("info", "blue"))
             if operation == "export":
                 return conf_obj.export()
             elif operation == "import":
@@ -435,8 +436,9 @@ class Goose(object):
             self._dbg(action="importing_items", item_keys=list(items.keys()), destination=self.destination)
 
             for func in [i for i in items if i in list(self.objects.keys())]:
-                self._display(
-                    f"Importing {func} configurations: {len(items[func])}",
+                if len(items[func]) > 0:
+                    self._display(
+                        f"Importing {func} configurations: {len(items[func])}",
                     colors["info"])
                 if func not in results:
                     results[func] = []
@@ -449,9 +451,9 @@ class Goose(object):
                         self._display(f"\t\tItem Groups: {individual_item['worker_groups']}", colors["info"])
                         import_result["groups"] = {}
                         item_groups = [group for group in individual_item["worker_groups"]]
-                        del individual_item["groups"]
+                        del individual_item["worker_groups"]
                         for group in item_groups:
-                            self._display(f"\t Importing {item_id} to group {group}")
+                            self._display(f"\t Importing item '{item_id}' to group '{group}'")
                             import_result["groups"][group] = self._perform_operation(self.objects[func],
                                                                                      "import",
                                                                                      self.destination,
@@ -471,6 +473,8 @@ class Goose(object):
                         self._display("\t\tNo Groups", colors["info"])
                         import_result = self._perform_operation(self.objects[func], "import", self.destination,
                                                                 item=individual_item)
+                    else:
+                        self._display(f"\t\tUnknown Issue with item '{item_id}': {','.join(list(individual_item.keys()))}", colors.get("warning", "yellow"))
                     if "worker_groups" in self.destination:
                         self._display(f'\t\tDestination Groups: {self.destination["worker_groups"]}', colors["info"])
                         import_result["dest_groups"] = {}

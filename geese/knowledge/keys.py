@@ -12,7 +12,7 @@ class Keys(BaseKnowledge):
         self.endpoint = "system/keys"
         self.api_path = f"/{self.endpoint}"
         self.group = None
-        if group is not None or fleet is not None:
+        if (group is not None or fleet is not None) and not self._is_free:
             self.group = fleet if fleet is not None else group
             self.is_fleet = True if fleet is not None else False
             self.endpoint = "system/keys"
