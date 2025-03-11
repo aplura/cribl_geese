@@ -41,6 +41,7 @@ class Routes(BaseKnowledge):
         if item is None:
             item = {}
         action = f"import_{self.obj_type}"
+        # CHANGE THIS TO BE NON-DESTRUCTIVE (don't overwrite IDs that we don't know about.)
         changes = {"id": item["id"] if "id" in item else "Unknown",
                    "previous": {"status": "not_updated", "data": {}},
                    "updated": {"status": "not_updated", "data": {}}}
@@ -51,13 +52,30 @@ class Routes(BaseKnowledge):
                       destination=self.url,
                       group=self.group)
             result = self.export()
+            new_routes = result[0]
+            existing_routes = []
+            added_routes = []
+            self._log("debug", action="updating_routes", existing_routes=new_routes)
+            changes["previous"]["data"] = {"routes": new_routes}
             if len(result) > 0:
-                for r in result:
-                    if r["id"] == item["id"]:
-                        changes["previous"] = {"status": "exists", "data": r}
+                for r in new_routes.get("routes", []):
+                    self._log("debug", action="updating_routes", step="adding_id_to_existing",id=r["id"])
+                    existing_routes.append(r["id"])
             else:
                 changes["previous"] = {"status": "error", "result": result}
-            result = self.patch(self.endpoint, payload=item)
+            for val in item.get("routes", []):
+                self._log("debug", action="updating_routes", step="checking_route",id=val["id"])
+                if val["id"] in existing_routes:
+                    idx = existing_routes.index(val["id"])
+                    self._display(f"\t\t\tFound route '{val['id']}' at index '{idx}': replacing", color="blue")
+                    new_routes["routes"][idx] = val
+                else:
+                    self._log("debug", action="updating_routes", step="pre-pending-route",id=val["id"])
+                    new_routes["routes"].insert(0, val)
+                    existing_routes.insert(0, val["id"])
+                    added_routes.append(val["id"])
+            # print(existing_routes, [x["id"] for x in new_routes.get("routes",[])], added_routes )
+            result = self.patch(self.endpoint, payload=new_routes)
             if result.status_code != 200:
                 self._log("info", action=action, item_type=self.obj_type, item_id=item["id"],
                           destination=self.url, message="Could not Create",
@@ -93,7 +111,7 @@ class Routes(BaseKnowledge):
                     changes["updated"] = {"status": "update_failed", "data": item, "error": result}
             else:
                 self._display(f"\t{item['id']}: Update succeeded.", self.colors.get("success", "green"))
-                changes['updated'] = {"status": "success", "data": item}
+                changes['updated'] = {"status": "success", "data": new_routes}
                 changes["diff"] = json.loads(
                     DeepDiff(changes["previous"]["data"], changes["updated"]["data"]).to_json())
             return changes
