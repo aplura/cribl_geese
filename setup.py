@@ -46,7 +46,9 @@ setuptools.setup(
         "deepdiff",
         "deepmerge",
         "urllib3",
-        "build"
+        "build",
+        "requests_html",
+        "lxml_html_clean"
     ],
     classifiers=[
         "Development Status :: 1 - Alpha",
