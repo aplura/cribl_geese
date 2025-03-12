@@ -53,6 +53,9 @@ class BaseKnowledge:
     def to_json(self):
         return dict(self)
 
+    def is_free(self):
+        return self._is_free
+
     def change_group(self, group=None):
         if group is not None:
             self.group = group

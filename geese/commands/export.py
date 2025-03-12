@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 from yaml import YAMLError, safe_dump
@@ -15,12 +16,75 @@ def _create_dir(export_dir, grp, namespace=None):
         os.makedirs(dur)
     return dur
 
-def _write_file(export_dir, export_file, data):
-    with open(os.path.join(export_dir, export_file), "w") as of:
-        if export_file.endswith(".json"):
-            of.write(json.dumps(data, indent=4))
+def _write_file(self, export_dir, export_file, data, args):
+    if not args.lookup_only:
+        with open(os.path.join(export_dir, export_file), "w") as of:
+            self._display(f"Writing Exported File {export_file}", colors.get("info", "blue"))
+            if export_file.endswith(".json"):
+                of.write(json.dumps(data, indent=4))
+            else:
+                safe_dump(data, of)
+
+def _build_lookup_item(type, data):
+    # Should have 3 columns. type,id,name,description
+    if type in ["system_auth"]:
+        return []
+    default_id = "id_not_found"
+    default_name = "name_not_found"
+    default_description = "description_not_found"
+    default_parent = "cribl"
+    item = {"type": type, "id": default_id, "name": default_name, "parent": default_parent, "description": default_description}
+    if type in ["routes"]:
+        item = [{"type": type, "id": data.get("id", default_id), "name": data.get("name", default_name), "parent": default_parent, "description": data.get("description", default_description)}]
+        for rts in data.get("routes", []):
+            item.append({"type": f"{type}_route", "id": rts.get("id", default_id), "name": rts.get("name", default_name), "parent": data.get("id", default_id), "description": data.get("description", default_description)})
+    else:
+        item["id"] = data.get("id", default_id)
+        item["name"] = data.get("name", default_name)
+        item["description"] = data.get("description", default_description)
+        if type in ["pipelines"]:
+            item["name"] = item["id"]
+            item = [item]
+            for i, f in enumerate(data.get('conf', {}).get('functions', [])):
+                item.append({"type": f"{type}_function", "id": f'{i}_{f.get("id", default_id)}', "name": f.get("name", default_name), "parent": item[0].get("id", default_id), "description": f.get("description", default_description)})
+    return item
+
+def _write_lookup(self, export_dir, export_file, data, args):
+    lookup_items = []
+    lookup_header = ["type", "id", "name", "parent", "description"]
+    for o in data:
+        obj = o.get("data", [])
+        if not args.split and not args.use_namespace:
+            for k in obj:
+                for i in obj[k]:
+                    r = _build_lookup_item(k, obj[k][i])
+                    if type(r) is list:
+                        [lookup_items.append(rd) for rd in r]
+                    else:
+                        lookup_items.append(r)
+        elif args.split:
+            t = o.get("object_type", "unknown")
+            for i in obj:
+                r =_build_lookup_item(t, obj[i])
+                if type(r) is list:
+                    [lookup_items.append(rd) for rd in r]
+                else:
+                    lookup_items.append(r)
         else:
-            safe_dump(data, of)
+            for wg in obj:
+                for t in obj[wg]:
+                    for i in obj[wg][t]:
+                        r = _build_lookup_item(t, obj[wg][t][i])
+                        if type(r) is list:
+                            [lookup_items.append(rd) for rd in r]
+                        else:
+                            lookup_items.append(r)
+    with open(os.path.join(export_dir, export_file), "w", newline='') as of:
+        self._display(f"\tWriting Lookup File {export_file}", colors.get("info", "blue"))
+        writer = csv.DictWriter(of, fieldnames=lookup_header)
+        writer.writeheader()
+        writer.writerows(lookup_items)
+        # of.write(data)
 
 def _export_leader(self, args):
     self._logger.debug("action=export_leader")
@@ -67,6 +131,7 @@ def _export_leader(self, args):
                                     c_obj[oop][k].append(item)
         if not os.path.exists(args.directory):
             os.makedirs(args.directory)
+        lookup_data = []
         if args.split:
             for obj in all_objects:
                 for wg in all_objects[obj]:
@@ -80,7 +145,8 @@ def _export_leader(self, args):
                                 "data": all_objects[obj][wg][ns].copy()
                             }
                             dur = _create_dir(args.directory, wg, obj)
-                            _write_file(dur, filename, data)
+                            lookup_data.append(data)
+                            _write_file(self, dur, filename, data, args)
                     else:
                         filename = f"{wg}.{args.file}"
                         data = {
@@ -89,10 +155,10 @@ def _export_leader(self, args):
                             "data": all_objects[obj][wg].copy()
                         }
                         dur = _create_dir(args.directory, obj)
-                        _write_file(dur, filename, data)
+                        lookup_data.append(data)
+                        _write_file(self, dur, filename, data, args)
         else:
             for obj in all_objects:
-                print(f"Working on {obj}")
                 data = {
                     "data": all_objects[obj].copy()
                 }
@@ -101,9 +167,13 @@ def _export_leader(self, args):
                 else:
                     data["group"] = obj
                 dur = _create_dir(args.directory, obj)
-                self._display(f"Writing Exported File {args.file}", colors.get("info", "blue"))
-                _write_file(dur, args.file, data)
+                lookup_data.append(data)
+                _write_file(self, dur, args.file, data, args)
         # self._display(exported_objects, colors.get("info", "green"))
+        if args.id_lookup:
+            l_file = args.id_lookup
+            self._display(f"Saving Lookup IDs to {l_file}", colors.get("info", "blue"))
+            _write_lookup(self, args.directory, l_file, lookup_data, args)
         self._display("Export Complete", colors.get("success", "green"))
     except YAMLError as err:
         self._logger.error("YAMLError: {}".format(err))
@@ -120,4 +190,10 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 add_arguments(parser, ["global", "objects"])
+parser.add_argument("--id-lookup",
+                    help="Pass a filename to save the ids with readable names.",
+                    default=None)
+parser.add_argument("--lookup-only",
+                    help="Do not export objects, but only ID lookup.",
+                    action="store_true")
 parser.set_defaults(handler=_export_leader, cmd="export")
