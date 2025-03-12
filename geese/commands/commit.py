@@ -48,7 +48,11 @@ def _commit_configurations(self, args):
             self._display("Committing default", colors.get("info", "blue"))
             vers = Versioning(self.destination, self._args, self._logger, group=None, fleet=None,
                               display=self._display)
-            vers.commit(args.commit_message, deploy=args.deploy, effective=True)
+            deploy = args.deploy
+            if vers.is_free():
+                self._display("Free Version detected, unable to deploy. Commit Only.", colors.get("warning", "yellow"))
+                deploy = False
+            vers.commit(args.commit_message, deploy=deploy, effective=True)
     except YAMLError as err:
         self._logger.error("YAMLError: {}".format(err))
         self._display("YAML Error: {}".format(err), "red")

@@ -432,6 +432,7 @@ class Goose(object):
             if self.destination is None:
                 raise Exception("Destination Leader to import is not defined")
             destination_groups_only = ["routes", "outputs", "inputs", "pipelines"]
+            updated_worker_groups = []
             results = {}
             self._dbg(action="importing_items", item_keys=list(items.keys()), destination=self.destination)
 
@@ -459,6 +460,7 @@ class Goose(object):
                                                                                      self.destination,
                                                                                      group=group,
                                                                                      item=individual_item)
+                            updated_worker_groups.append(group)
                     elif "conf" in individual_item and "worker_groups" in individual_item["conf"]:
                         self._display(f'\t\tConf Item Groups: {individual_item["conf"]["worker_groups"]}', colors["info"])
                         import_result["groups"] = {}
@@ -469,10 +471,12 @@ class Goose(object):
                                                                                      self.destination,
                                                                                      group=group,
                                                                                      item=individual_item)
+                            updated_worker_groups.append(group)
                     elif func not in destination_groups_only:
                         self._display("\t\tNo Groups", colors["info"])
                         import_result = self._perform_operation(self.objects[func], "import", self.destination,
                                                                 item=individual_item)
+                        updated_worker_groups.append("default")
                     else:
                         self._display(f"\t\tUnknown Issue with item '{item_id}': {','.join(list(individual_item.keys()))}", colors.get("warning", "yellow"))
                     if "worker_groups" in self.destination:
@@ -485,17 +489,18 @@ class Goose(object):
                                                                                           self.destination,
                                                                                           group=group,
                                                                                           item=individual_item)
+                            updated_worker_groups.append(group)
                     results[func].append(import_result)
-            if self._args.commit and "version" in items:
-                if "commit" in items["version"]:
-                    for group in items["version"]["commit"]["worker_groups"]:
-                        if self._args.commit:
-                            vers = Versioning(self.destination, self._args, self._logger, group=group, fleet=None,
-                                              display=self._display)
-                            deploy = False
-                            if "deploy" in items["version"] and "worker_groups" in items["version"]["deploy"]:
-                                deploy = group in items["version"]["deploy"]["worker_groups"] and self._args.deploy
-                            results["version"] = vers.commit(self._args.commit_message, deploy=deploy, effective=True)
+            self._dbg(action="checking for commit", item_keys=list(items.keys()))
+            if self._args.commit:
+                for wg in list(set(updated_worker_groups)):
+                    vers = Versioning(self.destination, self._args, self._logger, group=wg, fleet=None,
+                                      display=self._display)
+                    deploy = self._args.deploy and not vers.is_free()
+                    if self._args.deploy and vers.is_free():
+                        self._display("\tCannot Deploy on Free version, will just commit.", colors.get("warning", "yellow"))
+                    self._dbg(action="committing_version", group=wg, leader=self.destination["url"])
+                    results["commit"] = vers.commit(self._args.commit_message, deploy=deploy, effective=True)
             return True, {k: results[k] for k in results if len(results[k]) > 0}
         except Exception as e:
             self._display_error("Import Error", e)

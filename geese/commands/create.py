@@ -3,6 +3,7 @@ import geese.constants.exit_codes as ec
 import argparse
 import sys
 from geese.constants.common_arguments import add_arguments
+from geese.constants.configs import colors
 
 
 def _create_configurations(self, args):
@@ -10,7 +11,7 @@ def _create_configurations(self, args):
     try:
         arg_lines = [f"{key}={value}" for key, value in args.__dict__.items()]
         self._logger.debug(f"action=create_configurations {' '.join(arg_lines)}")
-
+        self._display("Not Implemented. Future Use.", colors.get("error", "red"))
     except YAMLError as err:
         self._logger.error("YAMLError: {}".format(err))
         self._display("YAML Error: {}".format(err), "red")
