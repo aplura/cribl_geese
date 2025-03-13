@@ -41,6 +41,33 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ## Release Notes
 
+### v1.1.4
+
+* Security Updates
+  * Updated `urllib3` to v2.2.2 to address [CVE-2024-37891](https://www.cve.org/CVERecord?id=CVE-2024-37891)
+  * Updated `setuptools` to `>=70.0.0`
+* Bugs
+  * Fixed `packs` export, configuration of the pack is now exported into the export config file.
+  * Fixed group targeting in source and destination.
+* Improvements
+  * Across the board, reworked internal command switches to be more consistent.
+* New Feature
+  * When uploading packs, the option to include a custom "pack" called a "ruck" is available.
+    * "kits" allow a more-comprehensive approach to packs, as they can include `collectors`, `inputs`, `secrets` and a default route that funnels matching data to the pack.
+    * The pack itself will still only contain pack routes, pipelines, and other knowledge settings, but other objects will be created if defined.
+  * Added configuration option `is_free` for standalone or not Enterprise editions of Cribl.
+  * Added `create` command for future use.
+  * Restrict to specific sources/destinations using `namespaces`.
+* Export
+  * Ability to export a lookup file (CSV) of Cribl Ids and Display names for further enrichments.
+  * Added ability to "split" configs into their knowledge objects with group and namespace information.
+* Validate
+  * Added multiple API Specs
+  * Still not working as intended due to malformed OpenAPI spec parsing.
+* Knowledge Objects
+  * `routes`
+    * Fixed the update call to "substitute and replace" only configured routes. Will not overwrite entire route list.
+
 ### v1.1.3
 
 * Improvements

@@ -10,9 +10,11 @@ class Inputs(BaseKnowledge):
         super().__init__(leader, args, logger, **kwargs)
         self.default_types = []
         self.endpoint = "system/inputs"
+        self.api_path = f"/{self.endpoint}"
         self.group = None
-        if group is not None or fleet is not None:
+        if (group is not None or fleet is not None) and not self._is_free:
             self.group = fleet if fleet is not None else group
+            self.is_fleet = True if fleet is not None else False
             self.endpoint = f"m/{self.group}/system/inputs"
 
     def export(self):

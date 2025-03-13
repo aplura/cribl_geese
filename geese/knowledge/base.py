@@ -2,6 +2,9 @@ import os
 import sys
 import requests
 import json
+
+from jsonschema.exceptions import ValidationError
+from openapi_schema_validator import validate
 from deepdiff import DeepDiff
 from termcolor import colored
 
@@ -15,18 +18,25 @@ class BaseKnowledge:
                 args = {}
             self.colors = {}
             self.tuning = {}
+            self.validate_spec = {"get": {}, "post": {}}
+            self.api_path = "/system/info"
             self.supports_groups = True
-            if "supports_groups" in kwargs:
-                self.supports_groups = kwargs["supports_groups"]
+            self.openapi = None
+            self.log = logger
+            self._is_free = leader.get("is_free", False)
             if "display" in kwargs.keys():
                 self._display = kwargs["display"]
+            if "validate_spec" in kwargs:
+                self.validate_spec = kwargs["validate_spec"]
+                self.openapi = validate
+            if "supports_groups" in kwargs:
+                self.supports_groups = kwargs["supports_groups"]
             if "colors" in kwargs.keys():
                 self.colors = kwargs["colors"]
             if "tuning" in kwargs.keys():
                 self.tuning = kwargs["tuning"]
-            self.namespace = args["namespace"] if "namespace" in args else None
             self.group = leader["group"] if "group" in leader and len(leader["group"]) > 0 else None
-            self.log = logger
+            self.is_fleet = False
             self.leader = leader
             self.endpoint = None
             self.url = leader["url"]
@@ -43,6 +53,14 @@ class BaseKnowledge:
     def to_json(self):
         return dict(self)
 
+    def is_free(self):
+        return self._is_free
+
+    def change_group(self, group=None):
+        if group is not None:
+            self.group = group
+        return self.group
+
     def __iter__(self):
         for attr, value in self.__dict__.items():
             if not attr.startswith("_") and not callable(value):
@@ -50,6 +68,15 @@ class BaseKnowledge:
 
     def supports_groups(self):
         return self.supports_groups
+
+    def _gen_save_dir(self, base_dir, ko_type):
+        grp = self.group if self.group else "default"
+        dur = os.path.join(base_dir, grp, ko_type)
+        if self.args.use_namespace:
+            dur = os.path.join(base_dir, self.leader["namespace"], grp, ko_type)
+        if not os.path.exists(dur):
+            os.makedirs(dur)
+        return dur
 
     def _display_error(self, msg, err, exit_code=False):
         emsg, fname, fnum, etype = self.get_exception_info(err)
@@ -85,7 +112,7 @@ class BaseKnowledge:
 
     def _display(self, string, color=None):
         print(string)
-        self.log.info(string)
+        self._log("info", action="display", color=color, string=string)
 
     def list(self):
         self._log("debug", action="List", message="base_implementation")
@@ -95,8 +122,42 @@ class BaseKnowledge:
         return []
 
     def export(self):
-        self._log("debug", action="Simulation", message="base_implementation")
+        self._log("debug", action="Export", message="base_implementation")
         return []
+
+    def _load_spec(self, spec_name=None):
+        s = None
+        if spec_name:
+            s = (self.validate_spec.get("paths")
+                 .get(spec_name, {})
+                 .get("post", {})
+                 .get("requestBody", {})
+                 .get("content", {})
+                 .get("application/json", {})
+                 .get("schema", None))
+        return s
+
+    def validate(self, item=None, api_path=None):
+        if api_path is None:
+            api_path = self.api_path
+        self._log("debug", action="Validation", message="base_implementation", item=item)
+        errors = {"id": api_path, "result": ""}
+        if self.openapi and api_path in list(self.validate_spec.get("paths", {}).keys()):
+            spec = self._load_spec(spec_name=api_path)
+            if spec:
+                try:
+                    self._log("debug", action="checking_spec", type=api_path, item=item, spec_keys=spec["oneOf"][0]["properties"])
+                    self.openapi(item, spec)
+                    self._display(f"\t\t{api_path}: valid", self.colors.get("success", "green"))
+                    errors["result"] = "success"
+                    errors["message"] = f"{api_path}: valid"
+                except ValidationError as e:
+                    self._display(f"\t\t{api_path}: {e.message}", self.colors.get("error", "red"))
+                    errors["result"] = "failure"
+                    errors["message"] = f"{api_path}: {e.message}"
+            else:
+                self._display(f"\t\t{api_path}: invalid schema, or not found", self.colors.get("warning", "yellow"))
+        return errors
 
     def _endpoint_by_id(self, item_id=None):
         return f'{self.endpoint}/{item_id if item_id is not None else ""}'
@@ -143,7 +204,8 @@ class BaseKnowledge:
                 response = requests.Session().post(url, data=pay_me, headers=headers, verify=self.verify_ssl)
             else:
                 response = requests.post(url, data=pay_me, headers=headers, verify=self.verify_ssl)
-            self._log("debug", stage="response", response=response.text, status=response.status_code, method="post", url=url, headers=headers, payload=pay_me, stream=stream,
+            self._log("debug", stage="response", response=response.text, status=response.status_code, method="post",
+                      url=url, headers=headers, payload=pay_me, stream=stream,
                       use_session=use_session)
             return response
         except Exception as e:

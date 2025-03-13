@@ -11,8 +11,9 @@ class Certificates(BaseKnowledge):
         super().__init__(leader, args, logger, **kwargs)
         self.endpoint = "system/certificates"
         self.group = None
-        if group is not None or fleet is not None:
+        if (group is not None or fleet is not None) and not self._is_free:
             self.group = fleet if fleet is not None else group
+            self.is_fleet = True if fleet is not None else False
             self.endpoint = "system/certificates"
         self.certificates = {}
 
@@ -21,9 +22,7 @@ class Certificates(BaseKnowledge):
         data = self.get(self.endpoint)
         if data.status_code == 200 and data.json():
             items = []
-            output_directory = os.path.join(self.args.export_dir, "certificates")
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
+            output_directory = self._gen_save_dir(self.args.directory, "certificates")
             for item in data.json()["items"]:
                 filename = os.path.join(output_directory, f"{item['id']}.crt")
                 with open(filename, 'w') as of:

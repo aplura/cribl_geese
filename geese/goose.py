@@ -27,6 +27,8 @@ def display(message, color="blue"):
 
 class Goose(object):
     objects = {}
+    validate_spec = {"get": {}, "post": {}}
+    spec_file = None
 
     def __init__(self, cmd, args, **kwargs):
         kl = KennyLoggins()
@@ -183,16 +185,28 @@ class Goose(object):
             self._display('\n\t'.join(msgs), colors["error"])
             sys.exit(ec.INVALID_COMMAND_PARAMETERS)
 
-    def get(self, knowledge=None):
+    def get(self, knowledge=None, restrict_sources=None):
         try:
+            valid_source = [s["namespace"] for s in self.sources]
+            if restrict_sources:
+                valid_source = f"{restrict_sources}".split(",")
+                self._display(f"Restricting Sources to: {', '.join(valid_source)}", colors.get("warning", "yellow"))
             if knowledge is None:
                 knowledge = []
-            return {s["namespace"]: self._get_source(knowledge, s) for s in self.sources}
+            self._logger.debug(f"action=get_knowledge valid_sources={','.join(valid_source)}")
+            ret_objs = {}
+            for s in self.sources:
+                if s["namespace"] not in valid_source:
+                    self._display(f"Ignoring Source: {s['namespace']}", colors.get("error", "red"))
+                else:
+                    ret_objs[s["namespace"]] = self._get_source(knowledge, s)
+            return ret_objs
         except Exception as e:
             self._display_error(f"Get Error: {knowledge}", e)
 
     def _get_source(self, knowledge, source):
         kos = {}
+        self._display(f"Gathering Knowledge Objects: {source.get('namespace')}", colors.get("info", "blue"))
         if "worker_groups" in source:
             for group in source["worker_groups"]:
                 kos[group] = {x: self._get(x, source, group=group) for x in knowledge if
@@ -216,14 +230,17 @@ class Goose(object):
         obj_type = "base"
         try:
             conf_obj = cls(leader, self._args, self._logger, group=group, fleet=fleet,
-                           display=self._display)
+                           display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
             obj_type = conf_obj.get_ot()
+            self._display(f"\t\tPerforming Operation: '{operation}' on '{obj_type}'", colors.get("info", "blue"))
             if operation == "export":
                 return conf_obj.export()
             elif operation == "import":
                 return conf_obj.update(item)
             elif operation == "simulate":
                 return conf_obj.simulate(item)
+            elif operation == "validate":
+                return conf_obj.validate(item)
             else:
                 self._display(f"Unhandled Item: {operation} for '{obj_type}'", colors.get("warning"))
                 return {}
@@ -290,6 +307,124 @@ class Goose(object):
             self._display_error("Simulate Error", e)
             return False, {}
 
+    def validate(self, items):
+        try:
+            # Removed leader config, we don't care. We will use the API SPEC
+            results = {}
+            conflict_ids = {}
+            if self._args.use_namespace:
+                for ns in items:
+                    self._display(f"Validating Namespace: {ns}", colors.get("info", "blue"))
+                    if ns not in list(results.keys()):
+                        self._dbg(action="validating_namespace",
+                                  groups=f"{list(items[ns].keys())}",)
+                        results[ns] = self._validate_group(items=items[ns], conflict_ids=conflict_ids)
+            else:
+                results = self._validate_group(items=items, conflict_ids=conflict_ids)
+            return True, {k: results[k] for k in results if len(results[k]) > 0}
+        except Exception as e:
+            self._display_error("Validate Error", e)
+            return False, {}
+
+    def _validate_group(self, items=None, conflict_ids=None):
+        results = {}
+        if items is None:
+            items = {}
+        if conflict_ids is None:
+            conflict_ids = {}
+        for group in items:
+            self._display(f"Validating Group: {group}", colors.get("info", "blue"))
+            if group not in results:
+                results[group] = {}
+            if group not in conflict_ids:
+                conflict_ids[group] = {}
+            for func in items[group]:
+                if len(items[group][func]) < 1:
+                    self._dbg(action="validating_group", result="continuing", length=len(items[group][func]), group=group)
+                    continue
+                self._dbg(action="validating_group", type=f"{func}", group=group)
+                if func in list(self.objects.keys()):
+                    self._display(
+                        f"\tValidating Import: '{func}' configurations",
+                        colors["info"])
+                else:
+                    self._display(
+                        f"\tNOT Validating Import: '{group}' configurations",
+                        colors["info"])
+                    continue
+                if func not in results[group]:
+                    results[group][func] = {"items": []}
+                if func not in conflict_ids:
+                    conflict_ids[group][func] = []
+                func_ids = []
+                for individual in items[group][func]:
+                    self._logger.debug(self._log_line(action="validating_object",
+                                                      type=func,
+                                                      group=group,
+                                                      individual=individual,
+                                                      is_string=isinstance(individual, str)))
+                    individual_item = items[group][func][individual] if isinstance(individual, str) else individual
+                    myID = individual_item["id"] if "id" in individual_item else "UnKnown ID Param"
+                    if myID in func_ids and myID not in conflict_ids[group][func]:
+                        conflict_ids[group][func].append(myID)
+                        if "conflicts" not in results[func]:
+                            results[group][func]["conflicts"] = []
+                        results[group][func]["conflicts"].append(myID)
+                    else:
+                        func_ids.append(myID)
+                    self._display(f"\tValidating: {myID}", colors["info"])
+                    import_result = self._perform_operation(self.objects[func], "validate", self.destination,
+                                                            item=individual_item)
+                    results[group][func]["items"].append(
+                        import_result if import_result is not None else {"status": "error", "result": import_result})
+        return results
+
+    def _load_prop_value(self, ref):
+        loaded_spec = self.validate_spec
+        spec_list = ref.split("/")
+        for sl in spec_list:
+            if sl == "#":
+                continue
+            loaded_spec = loaded_spec.get(sl, {})
+        return loaded_spec
+
+    def _load_property(self, s_prop):
+        if isinstance(s_prop, dict):
+            for props in s_prop:
+                if isinstance(s_prop[props], dict):
+                    v = self._load_property(s_prop[props])
+                    s_prop[props] = v
+                elif "$ref" == props:
+                    v = self._load_prop_value(s_prop["$ref"])
+                    s_prop = self._load_property(v)
+                elif isinstance(s_prop[props], list):
+                    s_prop[props] = [self._load_property(x) for x in s_prop[props]]
+                elif isinstance(s_prop[props], str):
+                    pass
+                else:
+                    pass
+                    # print(f"IS SUB: {type(s_prop[props])}")
+        elif isinstance(s_prop, str):
+            pass
+        else:
+            pass
+            # print(f"IS: {type(s_prop)}")
+        return s_prop
+
+    def load_spec(self, spec):
+        self.validate_spec = spec
+        for path in list(spec.get("paths", {}).keys()):
+            s = (spec["paths"]
+                 .get(path, {})
+                 .get("post", {})
+                 .get("requestBody", {})
+                 .get("content", {})
+                 .get("application/json", {})
+                 .get("schema", {}))
+            sp = self._load_property(s)
+            if len(list(sp.keys())) > 0:
+                self.validate_spec["paths"][path]["post"]["requestBody"]["content"]["application/json"]["schema"] = sp
+
     # pipelines, inputs, outputs, packs, lookups, globals, parsers, regexes, event_breakers, schemas, parquet_scheemas,
     # database, appscore, auth_config, notifications, mappings, fleet mappings, routes
     def perform_import(self, items):
@@ -297,10 +432,14 @@ class Goose(object):
             if self.destination is None:
                 raise Exception("Destination Leader to import is not defined")
             destination_groups_only = ["routes", "outputs", "inputs", "pipelines"]
+            updated_worker_groups = []
             results = {}
+            self._dbg(action="importing_items", item_keys=list(items.keys()), destination=self.destination)
+
             for func in [i for i in items if i in list(self.objects.keys())]:
-                self._display(
-                    f"Copying {func} configurations: {len(items[func])}",
+                if len(items[func]) > 0:
+                    self._display(
+                        f"Importing {func} configurations: {len(items[func])}",
                     colors["info"])
                 if func not in results:
                     results[func] = []
@@ -313,14 +452,15 @@ class Goose(object):
                         self._display(f"\t\tItem Groups: {individual_item['worker_groups']}", colors["info"])
                         import_result["groups"] = {}
                         item_groups = [group for group in individual_item["worker_groups"]]
-                        del individual_item["groups"]
+                        del individual_item["worker_groups"]
                         for group in item_groups:
-                            self._display(f"\t Importing {item_id} to group {group}")
+                            self._display(f"\t Importing item '{item_id}' to group '{group}'")
                             import_result["groups"][group] = self._perform_operation(self.objects[func],
                                                                                      "import",
                                                                                      self.destination,
                                                                                      group=group,
                                                                                      item=individual_item)
+                            updated_worker_groups.append(group)
                     elif "conf" in individual_item and "worker_groups" in individual_item["conf"]:
                         self._display(f'\t\tConf Item Groups: {individual_item["conf"]["worker_groups"]}', colors["info"])
                         import_result["groups"] = {}
@@ -331,10 +471,14 @@ class Goose(object):
                                                                                      self.destination,
                                                                                      group=group,
                                                                                      item=individual_item)
+                            updated_worker_groups.append(group)
                     elif func not in destination_groups_only:
                         self._display("\t\tNo Groups", colors["info"])
                         import_result = self._perform_operation(self.objects[func], "import", self.destination,
                                                                 item=individual_item)
+                        updated_worker_groups.append("default")
+                    else:
+                        self._display(f"\t\tUnknown Issue with item '{item_id}': {','.join(list(individual_item.keys()))}", colors.get("warning", "yellow"))
                     if "worker_groups" in self.destination:
                         self._display(f'\t\tDestination Groups: {self.destination["worker_groups"]}', colors["info"])
                         import_result["dest_groups"] = {}
@@ -345,18 +489,43 @@ class Goose(object):
                                                                                           self.destination,
                                                                                           group=group,
                                                                                           item=individual_item)
+                            updated_worker_groups.append(group)
                     results[func].append(import_result)
-            if self._args.commit and "version" in items:
-                if "commit" in items["version"]:
-                    for group in items["version"]["commit"]["worker_groups"]:
-                        if self._args.commit:
-                            vers = Versioning(self.destination, self._args, self._logger, group=group, fleet=None,
-                                              display=self._display)
-                            deploy = False
-                            if "deploy" in items["version"] and "worker_groups" in items["version"]["deploy"]:
-                                deploy = group in items["version"]["deploy"]["worker_groups"] and self._args.deploy
-                            results["version"] = vers.commit(self._args.commit_message, deploy=deploy, effective=True)
+            self._dbg(action="checking for commit", item_keys=list(items.keys()))
+            if self._args.commit:
+                for wg in list(set(updated_worker_groups)):
+                    vers = Versioning(self.destination, self._args, self._logger, group=wg, fleet=None,
+                                      display=self._display)
+                    deploy = self._args.deploy and not vers.is_free()
+                    if self._args.deploy and vers.is_free():
+                        self._display("\tCannot Deploy on Free version, will just commit.", colors.get("warning", "yellow"))
+                    self._dbg(action="committing_version", group=wg, leader=self.destination["url"])
+                    results["commit"] = vers.commit(self._args.commit_message, deploy=deploy, effective=True)
             return True, {k: results[k] for k in results if len(results[k]) > 0}
         except Exception as e:
             self._display_error("Import Error", e)
             return False, {}
+
+    def _inform(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.info(st)
+
+    def _dbg(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.debug(st)
+
+    def _warn(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.warn(st)
+
+    def _fatal(self, **kwargs):
+        st = f"{kwargs}"
+        if type(kwargs) is dict:
+            st = self._log_line(**kwargs)
+        self._logger.fatal(st)

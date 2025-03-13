@@ -7,6 +7,7 @@ source:
   client_secret: ""
   username: ""
   password: ""
+  is_free: false
   url: ""
   directories:
     pack: "packs"
@@ -19,6 +20,7 @@ destination:
   client_secret: ""
   username: ""
   enabled: true
+  is_free: false
   password: ""
   verify_ssl: false
   url: ""

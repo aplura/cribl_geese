@@ -12,7 +12,7 @@ def read(fname):
 
 setuptools.setup(
     name="geese",
-    version="1.1.3",
+    version="1.1.4",
     author="Aplura, LLC",
     author_email="appsupport@aplura.com",
     description="Cribl Migrator",
@@ -46,7 +46,9 @@ setuptools.setup(
         "deepdiff",
         "deepmerge",
         "urllib3",
-        "build"
+        "build",
+        "requests_html",
+        "lxml_html_clean"
     ],
     classifiers=[
         "Development Status :: 1 - Alpha",
