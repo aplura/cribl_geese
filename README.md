@@ -41,6 +41,8 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ## Release Notes
 
+### v1.1.5
+
 ### v1.1.4
 
 * Security Updates
