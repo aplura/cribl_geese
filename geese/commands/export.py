@@ -25,7 +25,7 @@ def _write_file(self, export_dir, export_file, data, args):
             else:
                 safe_dump(data, of)
 
-def _build_lookup_item(type, data):
+def _build_lookup_item(type, data, wg="default", ns="no_namespace"):
     # Should have 3 columns. type,id,name,description
     if type in ["system_auth"]:
         return []
@@ -33,11 +33,11 @@ def _build_lookup_item(type, data):
     default_name = "name_not_found"
     default_description = "description_not_found"
     default_parent = "cribl"
-    item = {"type": type, "id": default_id, "name": default_name, "parent": default_parent, "description": default_description}
+    item = {"type": type, "id": default_id, "name": default_name, "parent": default_parent, "description": default_description, "worker_group": wg, "namespace": ns}
     if type in ["routes"]:
-        item = [{"type": type, "id": data.get("id", default_id), "name": data.get("name", default_name), "parent": default_parent, "description": data.get("description", default_description)}]
+        item = [{"type": type, "id": data.get("id", default_id), "name": data.get("name", default_name), "parent": default_parent, "description": data.get("description", default_description), "worker_group": wg, "namespace": ns}]
         for rts in data.get("routes", []):
-            item.append({"type": f"{type}_route", "id": rts.get("id", default_id), "name": rts.get("name", default_name), "parent": data.get("id", default_id), "description": data.get("description", default_description)})
+            item.append({"type": f"{type}_route", "id": rts.get("id", default_id), "name": rts.get("name", default_name), "parent": data.get("id", default_id), "description": data.get("description", default_description), "worker_group": wg, "namespace": ns})
     else:
         item["id"] = data.get("id", default_id)
         item["name"] = data.get("name", default_name)
@@ -46,18 +46,20 @@ def _build_lookup_item(type, data):
             item["name"] = item["id"]
             item = [item]
             for i, f in enumerate(data.get('conf', {}).get('functions', [])):
-                item.append({"type": f"{type}_function", "id": f'{i}_{f.get("id", default_id)}', "name": f.get("name", default_name), "parent": item[0].get("id", default_id), "description": f.get("description", default_description)})
+                item.append({"type": f"{type}_function", "id": f'{i}_{f.get("id", default_id)}', "name": f.get("name", default_name), "parent": item[0].get("id", default_id), "description": f.get("description", default_description), "worker_group": wg, "namespace": ns})
     return item
 
 def _write_lookup(self, export_dir, export_file, data, args):
     lookup_items = []
-    lookup_header = ["type", "id", "name", "parent", "description"]
+    lookup_header = ["type", "id", "name", "parent", "description", "worker_group", "namespace"]
     for o in data:
+        wg = o.get("group", "no_group_found")
         obj = o.get("data", [])
+        ns = o.get("namespace", "no_namespace_found")
         if not args.split and not args.use_namespace:
             for k in obj:
                 for i in obj[k]:
-                    r = _build_lookup_item(k, obj[k][i])
+                    r = _build_lookup_item(k, obj[k][i], wg=wg, ns=ns)
                     if type(r) is list:
                         [lookup_items.append(rd) for rd in r]
                     else:
@@ -65,16 +67,16 @@ def _write_lookup(self, export_dir, export_file, data, args):
         elif args.split:
             t = o.get("object_type", "unknown")
             for i in obj:
-                r =_build_lookup_item(t, obj[i])
+                r =_build_lookup_item(t, obj[i], wg=wg, ns=ns)
                 if type(r) is list:
                     [lookup_items.append(rd) for rd in r]
                 else:
                     lookup_items.append(r)
         else:
-            for wg in obj:
-                for t in obj[wg]:
-                    for i in obj[wg][t]:
-                        r = _build_lookup_item(t, obj[wg][t][i])
+            for lwg in obj:
+                for t in obj[lwg]:
+                    for i in obj[lwg][t]:
+                        r = _build_lookup_item(t, obj[lwg][t][i], wg=lwg, ns=ns)
                         if type(r) is list:
                             [lookup_items.append(rd) for rd in r]
                         else:
