@@ -1,4 +1,8 @@
 # Global Arguments, that should apply to any command
+import sys
+
+from geese.constants.configs import export_cmd, tuning, import_cmd
+
 global_arguments = {
     "--propagate": {
         "help": 'Show All Messages from the logging subsystem.',
@@ -22,7 +26,81 @@ global_arguments = {
 }
 
 selective_arguments = {
-
+    "import": {
+        "--conflict-resolve": {
+            "help": "How to resolve conflicts",
+            "default": import_cmd["resolve_conflict"],
+            "choices": ['update', 'ignore']
+        },
+        "--save": {
+            "help": "Save the results of the import",
+            "action": "store_true"
+        },
+        "--save-file": {
+            "help": "Save the results of the import to this file",
+            "default": import_cmd["save_file"]
+        },
+        "--save-dir": {
+            "help": "Save the results of the validation to this directory",
+            "default": export_cmd["directory"]
+        },
+    },
+    "commit": {
+        "--commit-message": {
+            "help": "Commit message if set to commit"
+        },
+        "--commit": {
+            "help": "Commits changes after all objects are imported",
+            "action": "store_true"
+        },
+        "--deploy": {
+            "help": "Deploys the commit version to the worker or fleets.",
+            "action": "store_true"
+        }
+    },
+    "objects": {
+        "--list-objects": {
+            "help": "Show all objects available to the command",
+            "action": 'store_true'
+        },
+        "--namespace": {
+            "help": "Comma Separated list of namespaces to export"
+        },
+        "--tune-ids": {
+            "help": "Exclude or include ids from this file",
+            "default": tuning["file"]
+        },
+        "--use-namespace": {
+            "help": "Import all config options with a namespace",
+            "action": "store_true"
+        },
+        "--keep-defaults": {
+            "help": "Import all config options that are default items",
+            "action": "store_true"
+        },
+        "--all-objects": {
+            "help": "Just import everything",
+            "action": "store_true",
+            "required": "--objects" not in sys.argv and "--list-objects" not in sys.argv
+        },
+        "--objects": {
+            "help": "Space separated list of knowledge objects to Simulate",
+            "nargs": "+",
+            "required": "--all-objects" not in sys.argv and "--list-objects" not in sys.argv
+        },
+        "--split": {
+            "help": "Flag to indicate objects were split",
+            "action": "store_true"
+        },
+         "--directory": {
+            "help": "Directory to find configurations.",
+            "default": export_cmd["directory"]
+        },
+        "--file": {
+            "help": "Filename to read from or write to.",
+            "default": export_cmd["file"]
+        },
+    }
 }
 
 
@@ -32,7 +110,8 @@ def add_arguments(parser, arguments):
             for ga in global_arguments:
                 parser.add_argument(ga, **global_arguments[ga])
         elif arg in list(selective_arguments.keys()):
-            parser.add_argument(selective_arguments[arg]["flag"], **selective_arguments[arg]["args"])
+            for ga in selective_arguments[arg]:
+                parser.add_argument(ga, **selective_arguments[arg][ga])
 
 
 def _fix_addresses(**kwargs):

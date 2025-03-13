@@ -10,6 +10,7 @@ class Worker(BaseKnowledge):
         self.endpoint = None
         self.id = kwargs["id"] if "id" in kwargs else None
         self.group = fleet if fleet is not None else group
+        self.is_fleet = True if fleet is not None else False
         self.mode = "managed-edge" if fleet is not None else "worker"
         if "info" in kwargs and "cribl" in kwargs["info"]:
             self.mode = kwargs["info"]["cribl"]["distMode"]

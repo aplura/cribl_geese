@@ -10,6 +10,7 @@ class SrchUsageGroups(BaseKnowledge):
         super().__init__(leader, args, logger, **kwargs)
         self.default_types = []
         self.endpoint = "m/default_search/search/usage-groups"
+        self.api_path = f"/{self.endpoint}"
         self.group = "default_search"
 
     def export(self):

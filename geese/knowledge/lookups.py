@@ -14,19 +14,21 @@ class Lookups(BaseKnowledge):
         try:
             self.default_types = []
             self.endpoint = "system/lookups"
+            self.api_path = f"/{self.endpoint}"
             self.group = None
-            if group is not None or fleet is not None:
+            if (group is not None or fleet is not None) and not self._is_free:
                 self.group = fleet if fleet is not None else group
-                self.endpoint = "system/lookups"
+            self.is_fleet = True if fleet is not None else False
+            self.endpoint = "system/lookups"
         except Exception as e:
             self._display_error("Unhandled INIT Exception", e)
 
-    def save_lookup_content(self, lookup_id, save_to_directory="."):
+    def save_lookup_content(self, lookup_id, filename, save_to_directory="."):
         limit = 100000
         # TODO: Implement dynamic, config driven limits.
         response = self.get(f"{self.endpoint}/{lookup_id}/content?offset=0&limit={limit}")
         if response.status_code == 200:
-            with open(os.path.join(save_to_directory, lookup_id), "w", newline='') as lf:
+            with open(os.path.join(save_to_directory, filename), "w", newline='') as lf:
                 r = response.json()
                 fieldnames = r["fields"]
                 data = [fieldnames]
@@ -43,15 +45,18 @@ class Lookups(BaseKnowledge):
             if data.status_code == 200 and data.json():
                 for lookup in data.json()["items"]:
                     if save_file:
-                        self._display(f"\tDownloading Lookup: {lookup['id']}", self.colors.get("info"))
-                        lookup_directory = os.path.join(self.args.export_dir, "lookups",
-                                                        self.group if self.group is not None else "no_group")
-                        if not os.path.exists(lookup_directory):
-                            os.makedirs(lookup_directory)
-                        response = self.save_lookup_content(lookup["id"], f"{lookup_directory}")
+                        wg = self.group if self.group is not None else "default"
+                        filename = f"{lookup['id']}"
+                        if self.args.use_namespace:
+                            filename = f"{lookup['id']}"
+                        self._display(f"\tDownloading Lookup: {filename}", self.colors.get("info", "blue"))
+                        # if self.args.split and self.args.use_namespace:
+                        lookup_directory = self._gen_save_dir(self.args.directory, "lookups")
+                        response = self.save_lookup_content(lookup['id'], filename, f"{lookup_directory}")
                         if response.status_code == 200:
                             self._display(f"\t{lookup['id']}: File downloaded.", self.colors.get("success", "green"))
                             lookup["local_location"] = lookup_directory
+                            lookup["local_filename"] = filename
                         else:
                             self._display(f"\t{lookup['id']}: Error while trying to download. {response.text}",
                                           self.colors.get("error"))
