@@ -156,7 +156,8 @@ def load_configurations(self, args, ko):
                     if "data" in file_data and k in ko:
                         all_objects[root][k] = file_data["data"]
                         for iid in all_objects[root][k]:
-                            all_objects[root][k][iid]["worker_groups"] = [root]
+                            if type(all_objects[root][k][iid]) != list:
+                                all_objects[root][k][iid]["worker_groups"] = [root]
                         self._dbg(action="load_configurations",
                                   use_namespace=args.use_namespace,
                                   group=root,
