@@ -1,4 +1,6 @@
 __pycache__/
+exp_json/
+packs/
 .idea/*
 venv/
 *.egg-info/
