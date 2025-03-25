@@ -58,6 +58,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 add_arguments(parser, ["global", "import", "objects"])
+parser.add_argument("--errors-only", help="Show only errors", action="store_true")
 parser.add_argument("--api-version",
                     help="What version of the API to validate against.",
                     default=list(api_specs.keys())[0], choices=list(api_specs.keys()))
