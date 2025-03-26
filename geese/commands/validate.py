@@ -1,8 +1,5 @@
 import json
 import os
-import pathlib
-
-import requests
 import yaml
 from yaml import YAMLError, safe_dump
 import geese.constants.exit_codes as ec

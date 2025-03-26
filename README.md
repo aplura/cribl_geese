@@ -2,7 +2,7 @@
 
 Because we are migrating goats.
 This module allows interaction between Cribl environments.
-The main commands are: `export`, `import`, `simulate`, `migrate`, and `commit`.
+The main commands are: `export`, `import`, `simulate`, `migrate`, `validate`, and `commit`.
 
 ## Status
 

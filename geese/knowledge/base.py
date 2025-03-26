@@ -163,7 +163,6 @@ class BaseKnowledge:
                 except Exception as e:
                     self._display(f"\t\t{api_path} ({type(e)}): {e}", self.colors.get("error", "red"))
                     errors["result"] = "failure"
-                    print(spec['oneOf'][53]['properties']['contentConfig']['items']['properties']['contentType']['pattern'])
                     errors["message"] = f"{api_path}: {e}"
             else:
                 self._display(f"\t\t{api_path}: invalid schema, or not found", self.colors.get("warning", "yellow"))
