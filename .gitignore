@@ -16,7 +16,7 @@ build.sh
 *.iml
 *.lock
 *.log
-config.yaml
+config*.yaml
 sample.sh
 *.whl
 tuning.yaml
