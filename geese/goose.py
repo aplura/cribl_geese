@@ -209,13 +209,15 @@ class Goose(object):
         self._display(f"Gathering Knowledge Objects: {source.get('namespace')}", colors.get("info", "blue"))
         if "worker_groups" in source:
             for group in source["worker_groups"]:
+                self._display(f"\tWorker Group: {group}", colors.get("info", "blue"))
                 kos[group] = {x: self._get(x, source, group=group) for x in knowledge if
                               x in self.objects and validate_knowledge(x, self.tuning_object)}
         if "fleets" in source:
             for fleet in source["fleets"]:
+                self._display(f"\tFleet: {fleet}", colors.get("info", "blue"))
                 if fleet in kos:
                     fleet = f"fleet-{fleet}"
-                kos[fleet] = {x: self._get(x, source, fleet=fleet) for x in knowledge if
+                kos[fleet] = {x: self._get(x, source, group=fleet) for x in knowledge if
                               x in self.objects and validate_knowledge(x, self.tuning_object)}
         if "worker_groups" not in source and "fleets" not in source:
             kos["default"] = {x: self._get(x, source) for x in knowledge if
