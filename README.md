@@ -45,7 +45,8 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 * API Spec Updates
     * Added `4.10.1` API Specification
-    * Added `4.11.0` API Specification
+    * Added `4.11.0`, `4.11.1` API Specification
+    * Added `4.12.0`, `4.12.2` API Specification
     * Fixed bad Regex in API Specification to perform input validation.
         * See README.md in `geese/constants/api_specs`
 * New Features
