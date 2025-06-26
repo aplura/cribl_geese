@@ -1,3 +1,4 @@
+import re
 import time
 from copy import deepcopy
 from geese.knowledge import Outputs, Pipelines, Certificates, Secrets, Keys, AuthConfig, Routes, Inputs
@@ -59,14 +60,18 @@ class Goose(object):
                         always_merger.merge(self.destination, yaml_config["destination"])
                         self.destination["orig_url"] = self.destination["url"]
                         self.destination["url"] = f'{self.destination["url"]}/api/v1'
-                        if self.destination["enabled"]:
-                            self.destination["token"] = self._get_source_token(self.destination)
-                        else:
-                            self.destination = None
                     else:
                         self.destination = None
             except Exception as e:
                 self._display_error("File Not Found", e, ec.FILE_NOT_FOUND)
+        self._check_env_vars()
+        if self.destination and self.destination["enabled"]:
+            self.destination["token"] = self._get_source_token(self.destination)
+        else:
+            self.destination = None
+        for src in self.sources:
+            if src["enabled"]:
+                src["token"] = self._get_source_token(src)
         self._execute = args.handler
         self._log_level = default_log_level
         self.use_namespace = args.use_namespace if len(self.sources) > 1 and hasattr(args, 'use_namespace') else False
@@ -77,6 +82,41 @@ class Goose(object):
                    SrchDashboards, SrchDashboardCategories, SrchGrok, SrchRegexes, SrchUsageGroups,
                    SrchDatasetProviders]:
             self.objects[ds.obj_type] = ds
+
+    def _repl_env_vars(self, obj, os_env_keys):
+        errors= []
+        for k,v in obj.items():
+            self._logger.info(f'action="checking_os_env" key={k}')
+            if "$" in f'{v}':
+                self._logger.debug(f'action="replace_os_env" key={k}')
+                for match in  re.search(r'\$(\S+)', v).groups():
+                    self._logger.info(f'action="replace_os_env" key={k} match={match}')
+                    if match in os_env_keys:
+                        obj.update({k: v.replace(f'${match}', os.environ.get(match))})
+                    else:
+                        errors.append(f"Configuration contains invalid environment variable: {match}")
+        return obj, errors
+
+    def _check_env_vars(self):
+        self._logger.info('Checking environment variables')
+        os_env_keys = list(os.environ.keys())
+        self._logger.debug(f"os_env={os_env_keys}")
+        err = []
+        self.destination, errors = self._repl_env_vars(self.destination, os_env_keys)
+        err += errors
+        for i, src in enumerate(self.sources):
+            self.sources[i], errors = self._repl_env_vars(src, os_env_keys)
+            err += errors
+        err_string = ""
+        if len(err) > 0:
+            try:
+                err_string = "\n\t".join(err)
+                self._logger.error(f"action=error_env {err_string}")
+                raise Exception(err_string)
+            except Exception as e:
+                self._display_error(err_string, e, ec.INVALID_VALUE)
+
+
 
     @staticmethod
     def _log_line(**kwargs):
@@ -121,7 +161,6 @@ class Goose(object):
         if src["enabled"]:
             src["orig_url"] = src["url"]
             src["url"] = f'{src["url"]}/api/v1'
-            src["token"] = self._get_source_token(src)
             src["namespace"] = src["namespace"] if "namespace" in src else f"source_{idx}"
             self._logger.debug("action=_create_source %s" % " ".join([f"{k}=\"{v}\"" for k, v in src.items()]))
             return src
@@ -138,7 +177,7 @@ class Goose(object):
         print(colored(f"{message}", color, **kwargs))
         self._logger.info(f"action=display_message message=\"{message}\"")
 
-    def _display_error(self, msg, err, exit_code=False):
+    def _display_error(self, msg, err, exit_code=-1):
         emsg, fname, fnum, etype = self.get_exception_info(err)
         erre = [
             f'{msg}',
@@ -148,7 +187,7 @@ class Goose(object):
         t_msg = '\n'.join(erre)
         print(colored(f'{t_msg}', colors.get("error", "red")))
         self._logger.error(" ".join(erre))
-        if exit_code:
+        if exit_code > -1:
             sys.exit(exit_code)
 
     @staticmethod
