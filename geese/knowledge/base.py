@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 import requests
@@ -146,15 +147,23 @@ class BaseKnowledge:
             spec = self._load_spec(spec_name=api_path)
             if spec:
                 try:
-                    self._log("debug", action="checking_spec", type=api_path, item=item, spec_keys=spec["oneOf"][0]["properties"])
-                    self.openapi(item, spec)
-                    self._display(f"\t\t{api_path}: valid", self.colors.get("success", "green"))
+                    # self._log("debug", action="checking_spec", type=api_path, item=item, spec_keys=spec["oneOf"][0]["properties"])
+                    clean_item = copy.deepcopy(item)
+                    if "worker_groups" in clean_item:
+                        del clean_item["worker_groups"]
+                    self.openapi(clean_item, spec)
+                    if not self.args.errors_only:
+                        self._display(f"\t\t{api_path}: valid", self.colors.get("success", "green"))
                     errors["result"] = "success"
                     errors["message"] = f"{api_path}: valid"
                 except ValidationError as e:
                     self._display(f"\t\t{api_path}: {e.message}", self.colors.get("error", "red"))
                     errors["result"] = "failure"
                     errors["message"] = f"{api_path}: {e.message}"
+                except Exception as e:
+                    self._display(f"\t\t{api_path} ({type(e)}): {e}", self.colors.get("error", "red"))
+                    errors["result"] = "failure"
+                    errors["message"] = f"{api_path}: {e}"
             else:
                 self._display(f"\t\t{api_path}: invalid schema, or not found", self.colors.get("warning", "yellow"))
         return errors

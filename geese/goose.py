@@ -1,3 +1,4 @@
+import re
 import time
 from copy import deepcopy
 from geese.knowledge import Outputs, Pipelines, Certificates, Secrets, Keys, AuthConfig, Routes, Inputs
@@ -59,16 +60,21 @@ class Goose(object):
                         always_merger.merge(self.destination, yaml_config["destination"])
                         self.destination["orig_url"] = self.destination["url"]
                         self.destination["url"] = f'{self.destination["url"]}/api/v1'
-                        if self.destination["enabled"]:
-                            self.destination["token"] = self._get_source_token(self.destination)
-                        else:
-                            self.destination = None
                     else:
                         self.destination = None
             except Exception as e:
                 self._display_error("File Not Found", e, ec.FILE_NOT_FOUND)
-        self._execute = args.handler
+        self._check_env_vars()
         self._log_level = default_log_level
+        if self.destination and self.destination["enabled"]:
+            self.destination["token"] = self._get_source_token(self.destination)
+        else:
+            self.destination = None
+        for i, src in enumerate(self.sources):
+            if src["enabled"]:
+                src["token"] = self._get_source_token(src)
+                self.sources[i] = self._check_groups_config(src)
+        self._execute = args.handler
         self.use_namespace = args.use_namespace if len(self.sources) > 1 and hasattr(args, 'use_namespace') else False
         for ds in [Groups, Pipelines, Outputs, Inputs, CollectorJobs, GlobalVariables, Mappings, Parsers, Regexes,
                    GrokFiles, Schemas, ParquetSchemas, DatabaseConnections, Notifications,
@@ -77,6 +83,54 @@ class Goose(object):
                    SrchDashboards, SrchDashboardCategories, SrchGrok, SrchRegexes, SrchUsageGroups,
                    SrchDatasetProviders]:
             self.objects[ds.obj_type] = ds
+
+    def _check_groups_config(self, svr):
+        if "worker_groups" in svr:
+            self._logger.info(f'msg="worker_groups_present result="will_not_override" groups="{",".join(svr["worker_groups"])}"')
+        else:
+            ns = svr["namespace"]
+            self._dbg(namespace=ns, action="check_groups_config")
+            grp = Groups(svr, logger=self._logger, log_level=self._log_level, namespace=ns)
+            grps = grp.export()
+            self._logger.debug(f"svr_groups={grps} svr_groups_len={len(grps)}")
+            if len(grps) > 0:
+                svr["worker_groups"] = [g["id"] for g in grps if g.get("id", None) is not None]
+            else:
+                svr["worker_groups"] = ["default"]
+        return svr
+
+    def _repl_env_vars(self, obj, os_env_keys):
+        errors= []
+        for k,v in obj.items():
+            self._logger.info(f'action="checking_os_env" key={k}')
+            if "$$" in f'{v}':
+                self._logger.debug(f'action="replace_os_env" key={k}')
+                for match in  re.search(r'\$\$(\S+)', v).groups():
+                    self._logger.info(f'action="replace_os_env" key={k} match={match}')
+                    if match in os_env_keys:
+                        obj.update({k: v.replace(f'${match}', os.environ.get(match))})
+                    else:
+                        errors.append(f"Configuration contains invalid environment variable: {match}")
+        return obj, errors
+
+    def _check_env_vars(self):
+        self._logger.info('Checking environment variables')
+        os_env_keys = list(os.environ.keys())
+        self._logger.debug(f"os_env={os_env_keys}")
+        err = []
+        self.destination, errors = self._repl_env_vars(self.destination, os_env_keys)
+        err += errors
+        for i, src in enumerate(self.sources):
+            self.sources[i], errors = self._repl_env_vars(src, os_env_keys)
+            err += errors
+        err_string = ""
+        if len(err) > 0:
+            try:
+                err_string = "\n\t".join(err)
+                self._logger.error(f"action=error_env {err_string}")
+                raise Exception(err_string)
+            except Exception as e:
+                self._display_error(err_string, e, ec.INVALID_VALUE)
 
     @staticmethod
     def _log_line(**kwargs):
@@ -121,7 +175,6 @@ class Goose(object):
         if src["enabled"]:
             src["orig_url"] = src["url"]
             src["url"] = f'{src["url"]}/api/v1'
-            src["token"] = self._get_source_token(src)
             src["namespace"] = src["namespace"] if "namespace" in src else f"source_{idx}"
             self._logger.debug("action=_create_source %s" % " ".join([f"{k}=\"{v}\"" for k, v in src.items()]))
             return src
@@ -138,7 +191,7 @@ class Goose(object):
         print(colored(f"{message}", color, **kwargs))
         self._logger.info(f"action=display_message message=\"{message}\"")
 
-    def _display_error(self, msg, err, exit_code=False):
+    def _display_error(self, msg, err, exit_code=-1):
         emsg, fname, fnum, etype = self.get_exception_info(err)
         erre = [
             f'{msg}',
@@ -148,7 +201,7 @@ class Goose(object):
         t_msg = '\n'.join(erre)
         print(colored(f'{t_msg}', colors.get("error", "red")))
         self._logger.error(" ".join(erre))
-        if exit_code:
+        if exit_code > -1:
             sys.exit(exit_code)
 
     @staticmethod
@@ -209,13 +262,15 @@ class Goose(object):
         self._display(f"Gathering Knowledge Objects: {source.get('namespace')}", colors.get("info", "blue"))
         if "worker_groups" in source:
             for group in source["worker_groups"]:
+                self._display(f"\tWorker Group: {group}", colors.get("info", "blue"))
                 kos[group] = {x: self._get(x, source, group=group) for x in knowledge if
                               x in self.objects and validate_knowledge(x, self.tuning_object)}
         if "fleets" in source:
             for fleet in source["fleets"]:
+                self._display(f"\tFleet: {fleet}", colors.get("info", "blue"))
                 if fleet in kos:
                     fleet = f"fleet-{fleet}"
-                kos[fleet] = {x: self._get(x, source, fleet=fleet) for x in knowledge if
+                kos[fleet] = {x: self._get(x, source, group=fleet) for x in knowledge if
                               x in self.objects and validate_knowledge(x, self.tuning_object)}
         if "worker_groups" not in source and "fleets" not in source:
             kos["default"] = {x: self._get(x, source) for x in knowledge if
@@ -251,11 +306,11 @@ class Goose(object):
         try:
             data = []
             if func in list(self.objects.keys()):
-                self._display(f"Getting Source: {source['url']} ({func}) [{group}]", colors["info"])
+                self._display(f"Getting Source: {source['url']} ({func}) [{group}]", colors.get("info", "blue"))
                 [data.append(g) for g in self._perform_operation(self.objects[func], "export", source,
                                                                  group=group, fleet=fleet) if
                  validate(func, g, self.tuning_object)]
-                self._display(f"\tFound {len(data)} items in group [{group}]", colors["info"])
+                self._display(f"\tFound {len(data)} items in group [{group}]", colors.get("info", "blue"))
             return data
         except Exception as e:
             self._display_error(f"_get Error: {e}", e)
