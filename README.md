@@ -41,7 +41,7 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ## Release Notes
 
-### v1.1.5
+### v1.1.6
 
 * API Spec Updates
     * Added `4.10.1` API Specification
@@ -136,11 +136,11 @@ This file will be used in the installation and upgrade sections with the pip com
 
 From the command line, run this, changing `pip3` if required for your environment.
 
-    pip3 install ./geese-1.1.5.tar.gz
+    pip3 install ./geese-1.1.6.tar.gz
 
 ## Upgrade
 
-    pip3 install --upgrade ./geese-1.1.5.tar.gz
+    pip3 install --upgrade ./geese-1.1.6.tar.gz
 
 ## Usage
 
