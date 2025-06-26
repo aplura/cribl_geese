@@ -27,7 +27,7 @@ def _get_docs_page(self, dest):
             fop.parent.mkdir(parents=True, exist_ok=True)
         with open(fop, "w+", encoding="utf-8") as t:
             t.write(base.text)
-        self._display(f"Downloaded API Spec for {vers}", colors.get("info", "blue"))
+        self._display(f"Downloaded API Spec for {vers} from: {url}", colors.get("info", "blue"))
     # https://cdn.cribl.io/dl/4.9.3/cribl-apidocs-4.9.3-25d56bdd.yml
 
 def _download(self, args):

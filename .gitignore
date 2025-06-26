@@ -1,4 +1,6 @@
 __pycache__/
+exp_json/
+pack/
 .idea/*
 venv/
 *.egg-info/
@@ -8,13 +10,14 @@ logs/
 node_modules/
 cribl/
 build/
+download/
 # Files
 build.sh
 *-README.md
 *.iml
 *.lock
 *.log
-config.yaml
+config*.yaml
 sample.sh
 *.whl
 tuning.yaml

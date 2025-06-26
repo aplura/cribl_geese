@@ -1,11 +1,12 @@
 PyYAML==6.0.2
 multicommand==1.0.0
 termcolor==2.4.0
-setuptools>=70.0.0
+setuptools>=78.1.1
 deepmerge==1.1.1
 deepdiff==7.0.1
-urllib3>=2.2.2
+urllib3>=2.5.0
 build==1.2.1
 openapi-schema-validator==0.6.3
+requests>=2.32.4
 requests_html===0.10.0
-lxml_html_clean==0.4.1
+lxml_html_clean==0.4.0
