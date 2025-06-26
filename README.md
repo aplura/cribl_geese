@@ -48,6 +48,16 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
     * Added `4.11.0` API Specification
     * Fixed bad Regex in API Specification to perform input validation.
         * See README.md in `geese/constants/api_specs`
+* New Features
+  * **Environment Variables in Config**
+    * In `config.yaml`, or a user defined configuration file, each root level item (`username`, `password`, etc) can now include an environment variable.
+    * The key is variable as the environment requires.
+    * Example is below, where the key will be replaced according to the regex `$\S+`.
+    ```yaml
+    destination:
+      username: $CRIBL_LEADER_USERNAME
+      password: $CRIBL_LEADER_PASSWORD
+    ```
 
 ### v1.1.4
 
