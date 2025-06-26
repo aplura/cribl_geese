@@ -65,15 +65,16 @@ class Goose(object):
             except Exception as e:
                 self._display_error("File Not Found", e, ec.FILE_NOT_FOUND)
         self._check_env_vars()
+        self._log_level = default_log_level
         if self.destination and self.destination["enabled"]:
             self.destination["token"] = self._get_source_token(self.destination)
         else:
             self.destination = None
-        for src in self.sources:
+        for i, src in enumerate(self.sources):
             if src["enabled"]:
                 src["token"] = self._get_source_token(src)
+                self.sources[i] = self._check_groups_config(src)
         self._execute = args.handler
-        self._log_level = default_log_level
         self.use_namespace = args.use_namespace if len(self.sources) > 1 and hasattr(args, 'use_namespace') else False
         for ds in [Groups, Pipelines, Outputs, Inputs, CollectorJobs, GlobalVariables, Mappings, Parsers, Regexes,
                    GrokFiles, Schemas, ParquetSchemas, DatabaseConnections, Notifications,
@@ -83,13 +84,28 @@ class Goose(object):
                    SrchDatasetProviders]:
             self.objects[ds.obj_type] = ds
 
+    def _check_groups_config(self, svr):
+        if "worker_groups" in svr:
+            self._logger.info(f'msg="worker_groups_present result="will_not_override" groups="{",".join(svr["worker_groups"])}"')
+        else:
+            ns = svr["namespace"]
+            self._dbg(namespace=ns, action="check_groups_config")
+            grp = Groups(svr, logger=self._logger, log_level=self._log_level, namespace=ns)
+            grps = grp.export()
+            self._logger.debug(f"svr_groups={grps} svr_groups_len={len(grps)}")
+            if len(grps) > 0:
+                svr["worker_groups"] = [g["id"] for g in grps if g.get("id", None) is not None]
+            else:
+                svr["worker_groups"] = ["default"]
+        return svr
+
     def _repl_env_vars(self, obj, os_env_keys):
         errors= []
         for k,v in obj.items():
             self._logger.info(f'action="checking_os_env" key={k}')
-            if "$" in f'{v}':
+            if "$$" in f'{v}':
                 self._logger.debug(f'action="replace_os_env" key={k}')
-                for match in  re.search(r'\$(\S+)', v).groups():
+                for match in  re.search(r'\$\$(\S+)', v).groups():
                     self._logger.info(f'action="replace_os_env" key={k} match={match}')
                     if match in os_env_keys:
                         obj.update({k: v.replace(f'${match}', os.environ.get(match))})
@@ -115,8 +131,6 @@ class Goose(object):
                 raise Exception(err_string)
             except Exception as e:
                 self._display_error(err_string, e, ec.INVALID_VALUE)
-
-
 
     @staticmethod
     def _log_line(**kwargs):
@@ -292,11 +306,11 @@ class Goose(object):
         try:
             data = []
             if func in list(self.objects.keys()):
-                self._display(f"Getting Source: {source['url']} ({func}) [{group}]", colors["info"])
+                self._display(f"Getting Source: {source['url']} ({func}) [{group}]", colors.get("info", "blue"))
                 [data.append(g) for g in self._perform_operation(self.objects[func], "export", source,
                                                                  group=group, fleet=fleet) if
                  validate(func, g, self.tuning_object)]
-                self._display(f"\tFound {len(data)} items in group [{group}]", colors["info"])
+                self._display(f"\tFound {len(data)} items in group [{group}]", colors.get("info", "blue"))
             return data
         except Exception as e:
             self._display_error(f"_get Error: {e}", e)

@@ -11,7 +11,7 @@ class Groups(BaseKnowledge):
         self.default_types = []
         self.group = group if group else fleet if fleet else "default"
         self.is_fleet = True if fleet is not None else False
-        self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else f"master/groups/{self.group}"
+        self.endpoint = f"products/{product}/groups" if f'{leader["is_cloud"]}' == "true" else f"master/groups"
         self.api_path = f"/{self.endpoint}"
         self.supports_groups = False
 
