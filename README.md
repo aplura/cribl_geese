@@ -53,12 +53,17 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
   * **Environment Variables in Config**
     * In `config.yaml`, or a user defined configuration file, each root level item (`username`, `password`, etc) can now include an environment variable.
     * The key is variable as the environment requires.
-    * Example is below, where the key will be replaced according to the regex `$\S+`.
+    * The variable must have a double `$$`
+    * Example is below, where the key will be replaced according to the regex `$$\S+`.
     ```yaml
     destination:
       username: $CRIBL_LEADER_USERNAME
       password: $CRIBL_LEADER_PASSWORD
     ```
+* Improvements
+  * Export `ALL`
+    * When working with geese, if a config source does not have the `worker_groups` configuration item, Cribl will be queried to determine available groups, and the entire set will be utilized for exporting.
+    * Destinations without a `worker_groups` configuration item will default to the single group `default`. 
 
 ### v1.1.4
 
