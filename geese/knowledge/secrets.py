@@ -1,6 +1,7 @@
 import json
 from deepdiff import DeepDiff
 from geese.knowledge.base import BaseKnowledge
+from geese.knowledge.expression import Expression
 
 
 class Secrets(BaseKnowledge):
@@ -31,6 +32,14 @@ class Secrets(BaseKnowledge):
                           source_url=self.url,
                           source_group=self.group,
                           count=len(items))
+                render_secrets = True
+                if render_secrets:
+                    expr_obj = Expression(self.leader, self._args, self._logger, group=self.group, fleet=self.fleet,
+                                   display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
+                    for item in items:
+                        secretName = item["id"]
+                        secretType = item['secretType']
+                        print(f"{secretName}: {secretType}")
                 return items
             else:
                 self._log("warn", action=action,
