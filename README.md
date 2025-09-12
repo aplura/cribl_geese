@@ -43,7 +43,7 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ### Next
 
-### v1.1.6
+### v1.1.7
 
 * Security
   * Updated `deepdiff` to `>=8.6.1` to resolve [CWE-915](https://cwe.mitre.org/data/definitions/915.html)
@@ -150,11 +150,11 @@ This file will be used in the installation and upgrade sections with the pip com
 
 From the command line, run this, changing `pip3` if required for your environment.
 
-    pip3 install ./geese-1.1.6.tar.gz
+    pip3 install ./geese-1.1.7.tar.gz
 
 ## Upgrade
 
-    pip3 install --upgrade ./geese-1.1.6.tar.gz
+    pip3 install --upgrade ./geese-1.1.7.tar.gz
 
 ## Usage
 
