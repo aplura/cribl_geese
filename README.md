@@ -41,15 +41,26 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ## Release Notes
 
+### Next
+
 ### v1.1.6
 
 * Security
   * Updated `deepdiff` to `>=8.6.1` to resolve [CWE-915](https://cwe.mitre.org/data/definitions/915.html)
 * API Spec Updates
+    * Added `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3` API Specification
+    * Fixed bad Regex in API Specification to perform input validation.
+        * See README.md in `geese/constants/api_specs`
+* New Features
+  * Added `--render` option to the `export` command
+    * Allows for Secrets to be 'rendered' with their secret value in the config.
+    
+### v1.1.5
+
+* API Spec Updates
     * Added `4.10.1` API Specification
     * Added `4.11.0`, `4.11.1` API Specification
     * Added `4.12.0`, `4.12.2` API Specification
-    * Added `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3` API Specification
     * Fixed bad Regex in API Specification to perform input validation.
         * See README.md in `geese/constants/api_specs`
 * New Features
@@ -63,8 +74,6 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
       username: $CRIBL_LEADER_USERNAME
       password: $CRIBL_LEADER_PASSWORD
     ```
-  * Added `--render` option to the `export` command
-    * Allows for Secrets to be 'rendered' with their secret value in the config.
 * Improvements
   * Export `ALL`
     * When working with geese, if a config source does not have the `worker_groups` configuration item, Cribl will be queried to determine available groups, and the entire set will be utilized for exporting.
