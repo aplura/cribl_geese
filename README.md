@@ -41,9 +41,9 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ## Release Notes
 
-### Next
-
 ### v1.1.7
+
+### v1.1.6
 
 * Security
   * Updated `deepdiff` to `>=8.6.1` to resolve [CWE-915](https://cwe.mitre.org/data/definitions/915.html)
