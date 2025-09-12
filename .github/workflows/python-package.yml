@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
@@ -36,3 +36,17 @@ jobs:
     - name: Test with pytest
       run: |
         pytest tests/tests.py --doctest-modules --junitxml=tests/junit/junit-test-results.xml
+    - name: Build Package SDist
+      run: python -m build --sdist
+    - name: Build Package Wheel
+      run: python -m build --wheel && env
+    - name: Archive JUnit Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: JUnit Test Results [Python ${{ matrix.python-version }}]
+        path: tests/junit/junit-test-results.xml
+    - name: Archive Packages Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: Packages [Python ${{ matrix.python-version }}]
+        path: dist/geese*

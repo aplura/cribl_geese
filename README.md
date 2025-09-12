@@ -41,6 +41,20 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ## Release Notes
 
+### Next
+
+### v1.1.6
+
+* Security
+  * Updated `deepdiff` to `>=8.6.1` to resolve [CWE-915](https://cwe.mitre.org/data/definitions/915.html)
+* API Spec Updates
+    * Added `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3` API Specification
+    * Fixed bad Regex in API Specification to perform input validation.
+        * See README.md in `geese/constants/api_specs`
+* New Features
+  * Added `--render` option to the `export` command
+    * Allows for Secrets to be 'rendered' with their secret value in the config.
+    
 ### v1.1.5
 
 * API Spec Updates
@@ -136,11 +150,11 @@ This file will be used in the installation and upgrade sections with the pip com
 
 From the command line, run this, changing `pip3` if required for your environment.
 
-    pip3 install ./geese-1.1.5.tar.gz
+    pip3 install ./geese-1.1.6.tar.gz
 
 ## Upgrade
 
-    pip3 install --upgrade ./geese-1.1.5.tar.gz
+    pip3 install --upgrade ./geese-1.1.6.tar.gz
 
 ## Usage
 
