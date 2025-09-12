@@ -12,8 +12,12 @@ class Secrets(BaseKnowledge):
         try:
             self.default_types = []
             self.endpoint = "system/secrets"
+            self._args = args
             self.api_path = f"/{self.endpoint}"
+            self._logger = logger
             self.group = None
+            self.fleet = fleet
+            self.spec_file = ""
             if (group is not None or fleet is not None) and not self._is_free:
                 self.group = fleet if fleet is not None else group
             self.is_fleet = True if fleet is not None else False
@@ -32,15 +36,25 @@ class Secrets(BaseKnowledge):
                           source_url=self.url,
                           source_group=self.group,
                           count=len(items))
-                render_secrets = True
-                if render_secrets:
+                export_items = []
+                if self._args.render:
                     expr_obj = Expression(self.leader, self._args, self._logger, group=self.group, fleet=self.fleet,
                                    display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
                     for item in items:
                         secretName = item["id"]
                         secretType = item['secretType']
-                        print(f"{secretName}: {secretType}")
-                return items
+                        expr = f'C.Secret("{secretName}").value'
+                        if secretType == "credentials":
+                            expr = f'C.Secret("{secretName}").password'
+                        elif secretType == "keypair":
+                            expr = f'C.Secret("{secretName}").secretKey'
+                        result = expr_obj.render(expr)
+                        if len(result) > 0:
+                            item[secretType] = ",".join([r["result"] for r in result if r["result"]])
+                        export_items.append(item)
+                else:
+                    export_items = items
+                return export_items
             else:
                 self._log("warn", action=action,
                           source_url=self.url,

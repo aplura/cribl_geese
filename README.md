@@ -60,6 +60,8 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
       username: $CRIBL_LEADER_USERNAME
       password: $CRIBL_LEADER_PASSWORD
     ```
+  * Added `--render` option to the `export` command
+    * Allows for Secrets to be 'rendered' with their secret value in the config.
 * Improvements
   * Export `ALL`
     * When working with geese, if a config source does not have the `worker_groups` configuration item, Cribl will be queried to determine available groups, and the entire set will be utilized for exporting.

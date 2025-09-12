@@ -25,7 +25,7 @@ class Expression(BaseKnowledge):
         }
         data = self.post(self.endpoint, data=json.dumps(params))
         if data.status_code == 200 and data.json():
-            items = [p['result'] for p in data.json()["items"] if p["id"] not in self.default_types or self.args.keep_defaults]
+            items = [p for p in data.json()["items"] if p["id"] not in self.default_types or self.args.keep_defaults]
             self._log("info",
                       action=action,
                       source_url=self.url,

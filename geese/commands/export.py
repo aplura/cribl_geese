@@ -198,4 +198,7 @@ parser.add_argument("--id-lookup",
 parser.add_argument("--lookup-only",
                     help="Do not export objects, but only ID lookup.",
                     action="store_true")
+parser.add_argument("--render",
+                    help="[SENSITIVE] If the object supports 'rendering' from the 'expressions' endpoint (Secrets specifically), provide the value of the object.",
+                    action="store_true")
 parser.set_defaults(handler=_export_leader, cmd="export")
