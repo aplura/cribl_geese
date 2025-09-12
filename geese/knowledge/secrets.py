@@ -41,16 +41,17 @@ class Secrets(BaseKnowledge):
                     expr_obj = Expression(self.leader, self._args, self._logger, group=self.group, fleet=self.fleet,
                                    display=self._display, validate_spec=self.validate_spec, spec_file=self.spec_file)
                     for item in items:
-                        secretName = item["id"]
-                        secretType = item['secretType']
-                        expr = f'C.Secret("{secretName}").value'
-                        if secretType == "credentials":
-                            expr = f'C.Secret("{secretName}").password'
-                        elif secretType == "keypair":
-                            expr = f'C.Secret("{secretName}").secretKey'
+                        # https://docs.cribl.io/stream/expressions-other/#csecret
+                        secret_name = item["id"]
+                        secret_type = item['secretType']
+                        expr = f'C.Secret("{secret_name}").value'
+                        if secret_type == "credentials":
+                            expr = f'C.Secret("{secret_name}").password'
+                        elif secret_type == "keypair":
+                            expr = f'C.Secret("{secret_name}").secretKey'
                         result = expr_obj.render(expr)
                         if len(result) > 0:
-                            item[secretType] = ",".join([r["result"] for r in result if r["result"]])
+                            item[secret_type] = ",".join([r["result"] for r in result if r["result"]])
                         export_items.append(item)
                 else:
                     export_items = items
