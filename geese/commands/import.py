@@ -28,7 +28,7 @@ def _import_configurations(self, args):
         else:
             self._display(f"Importing Configs to {self.destination['url']}", colors.get("info", "blue"))
             for grp in filtered_objects:
-                all_good, results[grp] = self.perform_import(filtered_objects[grp])
+                all_good, results[grp] = self.perform_import(filtered_objects[grp], {"group": grp})
         if args.save:
             with open(os.path.join(args.directory, f"{args.save_file}"), "w") as of:
                 if args.save_file.endswith(".json"):

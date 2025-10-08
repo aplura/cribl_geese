@@ -15,6 +15,7 @@ download/
 build.sh
 *-README.md
 *.iml
+asa-467*/
 *.lock
 *.log
 config*.yaml

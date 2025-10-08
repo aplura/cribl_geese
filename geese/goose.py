@@ -482,8 +482,10 @@ class Goose(object):
 
     # pipelines, inputs, outputs, packs, lookups, globals, parsers, regexes, event_breakers, schemas, parquet_scheemas,
     # database, appscore, auth_config, notifications, mappings, fleet mappings, routes
-    def perform_import(self, items):
+    def perform_import(self, items, item_metadata = None):
         try:
+            if item_metadata is None:
+                item_metadata = {}
             if self.destination is None:
                 raise Exception("Destination Leader to import is not defined")
             destination_groups_only = ["routes", "outputs", "inputs", "pipelines"]
@@ -505,7 +507,8 @@ class Goose(object):
                     import_result = {}
                     if "worker_groups" in individual_item:
                         self._display(f"\t\tItem Groups: {individual_item['worker_groups']}", colors["info"])
-                        import_result["groups"] = {}
+                        if "groups" not in import_result:
+                            import_result["groups"] = {}
                         item_groups = [group for group in individual_item["worker_groups"]]
                         del individual_item["worker_groups"]
                         for group in item_groups:
@@ -532,9 +535,19 @@ class Goose(object):
                         import_result = self._perform_operation(self.objects[func], "import", self.destination,
                                                                 item=individual_item)
                         updated_worker_groups.append("default")
-                    else:
-                        self._display(f"\t\tUnknown Issue with item '{item_id}': {','.join(list(individual_item.keys()))}", colors.get("warning", "yellow"))
-                    if "worker_groups" in self.destination:
+                    elif item_metadata.get("group", None) is not None:
+                        grp = item_metadata.get("group")
+                        self._display(f'\t\tMetadata Group: {grp}', colors["info"])
+                        if "groups" not in import_result:
+                            import_result["groups"] = {}
+                        self._display(f"\t Importing item '{item_id}' to group '{grp}'")
+                        import_result["groups"][grp] = self._perform_operation(self.objects[func],
+                                                                                 "import",
+                                                                                 self.destination,
+                                                                                 group=grp,
+                                                                                 item=individual_item)
+                        updated_worker_groups.append(grp)
+                    elif "worker_groups" in self.destination:
                         self._display(f'\t\tDestination Groups: {self.destination["worker_groups"]}', colors["info"])
                         import_result["dest_groups"] = {}
                         for group in self.destination["worker_groups"]:
@@ -545,6 +558,8 @@ class Goose(object):
                                                                                           group=group,
                                                                                           item=individual_item)
                             updated_worker_groups.append(group)
+                    else:
+                        self._display(f"\t\tUnknown Issue with item '{item_id}': {','.join(list(individual_item.keys()))}", colors.get("warning", "yellow"))
                     results[func].append(import_result)
             self._dbg(action="checking for commit", item_keys=list(items.keys()))
             if self._args.commit:
