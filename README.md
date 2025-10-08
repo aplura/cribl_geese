@@ -43,6 +43,9 @@ Please see: https://github.com/aplura/cribl_geese/issues for open issues.
 
 ### v1.1.7
 
+* Improvements
+  * Updated the `import` command to use the group found in the object file first, and only use `worker_groups` in the destination if nothing else is found.
+
 ### v1.1.6
 
 * Security
