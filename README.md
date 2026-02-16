@@ -297,10 +297,9 @@ Otherwise, the export structure is:
 > ℹ️ **_NOTE:_** Currently, import will only check the last high level configuration set in the export file.
 > Multiple groups (at the highest level) is not supported.
 > If you want to import against multiple worker groups, update the configurations to have a `worker_groups` array with the
-> specified worker groups.
+> specified worker groups. 
 
-Here, if `--use-namespace` is set, then any conflicted items will use their 'namespaced' id, and not the Cribl
-configured ID.
+Here, if `--use-namespace` is set, then any conflicted items will use their 'namespaced' id, and not the Cribl configured ID.
 
 ## Simulate
 

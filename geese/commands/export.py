@@ -22,6 +22,8 @@ def _write_file(self, export_dir, export_file, data, args):
             self._display(f"Writing Exported File {export_file}", colors.get("info", "blue"))
             if export_file.endswith(".json"):
                 of.write(json.dumps(data, indent=4))
+            elif export_file.endswith(".tf"):
+                of.write(json.dumps(data, indent=4))
             else:
                 safe_dump(data, of)
 

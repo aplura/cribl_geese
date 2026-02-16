@@ -548,6 +548,7 @@ class Goose(object):
                                                                                  item=individual_item)
                         updated_worker_groups.append(grp)
                     elif "worker_groups" in self.destination:
+                        # Only if no other group information is found.
                         self._display(f'\t\tDestination Groups: {self.destination["worker_groups"]}', colors["info"])
                         import_result["dest_groups"] = {}
                         for group in self.destination["worker_groups"]:
